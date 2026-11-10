@@ -1,0 +1,11 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+
+# Dependencies (only relevant if you later add a build step)
+node_modules/
+
+# AI tool workspace folders
+.qodo/
+.dist/

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horizon — Warehouse Operations & Logistics SaaS</title>
+  <meta name="description" content="Free, open-source warehouse operations & logistics dashboard template. Pure HTML + Tailwind + vanilla JS, no build step." />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            horizon: {
+              green: '#15803d',
+              greenLight: '#16a34a',
+              greenSoft: '#dcfce7',
+              bgOuter: '#e4e7ec',
+              bgApp: '#f5f6f8',
+              border: '#eaecf0',
+            }
+          }
+        }
+      }
+    }
+    // Restore saved theme before first paint (avoids flash of light mode).
+    if (localStorage.getItem('hz-theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <link rel="stylesheet" href="assets/css/theme.css"/>
+</head>
+<body class="p-2 sm:p-3.5 md:p-4 flex items-center justify-center">
+
+  <!-- OUTER FIXED FRAME: Never changes dimensions when switching menus or submenus -->
+  <div id="appFrame" class="w-full max-w-[1600px] h-[calc(100vh-16px)] sm:h-[calc(100vh-28px)] md:h-[calc(100vh-32px)] bg-[#f6f7f9] dark:bg-slate-900 rounded-[20px] shadow-[0_20px_60px_-15px_rgba(15,23,42,0.16)] border border-white/80 dark:border-slate-800 flex overflow-hidden relative transition-colors duration-300">
+
+    <!-- ==================== LEFT SIDEBAR ==================== -->
+    <aside id="sidebar" class="w-[248px] shrink-0 bg-[#f6f7f9] dark:bg-slate-900 border-r border-[#e6e8ec] dark:border-slate-800 flex flex-col h-full select-none transition-all duration-300 z-20">
+
+      <!-- Brand Header -->
+      <div class="h-[60px] px-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5 cursor-pointer group" onclick="switchMenu('warehouse-operations')">
+          <div class="w-7 h-7 rounded-lg bg-[#15803d] flex items-center justify-center text-white font-bold text-base shadow-sm group-hover:bg-[#16a34a] transition-colors">
+            H
+          </div>
+          <span class="font-semibold text-[16px] tracking-tight text-slate-900 dark:text-white sidebar-text">Horizon</span>
+        </div>
+        <button id="collapseBtn" onclick="toggleSidebarCollapse()" title="Toggle Sidebar" class="w-7 h-7 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 flex items-center justify-center transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <line x1="9" y1="4" x2="9" y2="20" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Sidebar Search Input -->
+      <div class="px-3.5 pb-3 shrink-0 sidebar-search-wrap">
+        <div class="relative flex items-center">
+          <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input
+            id="sidebarSearchInput"
+            type="text"
+            placeholder="Search..."
+            oninput="handleSidebarSearch(this.value)"
+            class="w-full pl-8 pr-11 py-1.5 text-[12.5px] bg-white dark:bg-slate-800 border border-[#e2e5ec] dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#15803d]/25 focus:border-[#15803d] transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+          />
+          <kbd onclick="document.getElementById('sidebarSearchInput').focus()" class="cursor-pointer absolute right-2 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 dark:text-slate-400 bg-[#f3f4f6] dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600">⌘F</kbd>
+        </div>
+      </div>
+
+      <!-- Scrollable Navigation Menu Area (built dynamically from assets/js/config.js) -->
+      <nav id="sidebarNav" class="flex-1 overflow-y-auto custom-scroll px-3 py-1 space-y-4">
+        <!-- Populated by buildSidebar() in assets/js/router.js -->
+      </nav>
+
+      <!-- Sidebar Footer: Premium Card + Settings + Dark Mode -->
+      <div class="p-3 pt-2 shrink-0 space-y-2 border-t border-slate-200/60 dark:border-slate-800/80">
+
+        <!-- Premium Promo Card -->
+        <div id="premiumCard" class="premium-gradient rounded-xl p-3 border border-emerald-200/70 dark:border-emerald-800/50 shadow-sm relative overflow-hidden sidebar-text">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-md mb-2.5 border border-white/50">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 3h12l4 6-10 12L2 9l4-6zm2.5 2L5.8 9h12.4l-2.7-4H8.5zM12 18.2 17.6 11H6.4L12 18.2z"/>
+            </svg>
+          </div>
+          <div class="text-[12.5px] font-semibold text-slate-900 dark:text-white leading-snug">Premium plan</div>
+          <div class="text-[11px] text-slate-500 dark:text-slate-300 mt-0.5 mb-2.5 leading-tight">Sending more now is not a concern</div>
+          <button onclick="openUpgradeModal()" class="w-full py-1.5 px-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-lg text-[11.5px] font-semibold border border-slate-200/90 dark:border-slate-700 shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]">
+            <svg class="w-3.5 h-3.5 text-slate-700 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            Upgrade plan
+          </button>
+        </div>
+
+        <!-- Settings & Dark Mode -->
+        <div class="space-y-0.5 pt-0.5">
+          <button data-menu="settings" onclick="switchMenu('settings')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all">
+            <span class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-400 menu-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span class="sidebar-text">Settings</span>
+            </span>
+          </button>
+
+          <div onclick="toggleDarkMode()" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 cursor-pointer transition-all">
+            <span class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+              <span class="sidebar-text">Dark mode</span>
+            </span>
+            <button id="darkModeSwitch" role="switch" aria-checked="false" class="w-8 h-4.5 p-0.5 rounded-full bg-slate-200 dark:bg-[#16a34a] transition-colors flex items-center sidebar-text">
+              <span id="darkModeKnob" class="w-3.5 h-3.5 rounded-full bg-white shadow transform transition-transform duration-200"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== RIGHT MAIN WORKSPACE ==================== -->
+    <div class="flex-1 flex flex-col h-full min-w-0 bg-[#f6f7f9] dark:bg-slate-900 overflow-hidden">
+
+      <!-- Sticky Top Header Bar -->
+      <header class="h-[60px] px-5 bg-[#f6f7f9] dark:bg-slate-900 flex items-center justify-between shrink-0 border-b border-transparent z-10">
+        <!-- Dynamic Page Title & Breadcrumb -->
+        <div class="flex items-center gap-2.5 min-w-0">
+          <h1 id="topHeaderTitle" class="text-[15.5px] font-semibold text-slate-800 dark:text-white tracking-tight truncate">
+            Warehouse operations
+          </h1>
+          <span id="topHeaderBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+            Live Telemetry
+          </span>
+        </div>
+
+        <!-- Right Header Controls -->
+        <div class="flex items-center gap-2">
+          <!-- Refresh Button -->
+          <button onclick="triggerLiveRefresh()" class="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-[#e2e5ec] dark:border-slate-700 text-[12px] font-medium flex items-center gap-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all active:scale-95">
+            <svg id="refreshIcon" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+            </svg>
+            <span class="hidden sm:inline">Refresh</span>
+          </button>
+
+          <!-- Global Status Filter Dropdown -->
+          <div class="relative">
+            <button onclick="toggleHeaderFilterMenu()" class="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-[#e2e5ec] dark:border-slate-700 text-[12px] font-medium flex items-center gap-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+              <svg class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="8" y1="12" x2="20" y2="12"/>
+                <line x1="12" y1="18" x2="20" y2="18"/>
+                <circle cx="6" cy="12" r="2"/>
+                <circle cx="10" cy="18" r="2"/>
+              </svg>
+              <span id="headerFilterLabel" class="hidden sm:inline">Filter</span>
+              <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </button>
+            <!-- Filter Popover -->
+            <div id="headerFilterDropdown" class="hidden absolute right-0 mt-1.5 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-1.5 z-50 text-[12px]">
+              <div class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Filter Status</div>
+              <button onclick="applyStatusFilter('ALL')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-between">
+                <span>All Trucks</span>
+                <span class="text-slate-400 text-[11px]" id="countAll">9</span>
+              </button>
+              <button onclick="applyStatusFilter('Loading')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>Loading</span>
+              </button>
+              <button onclick="applyStatusFilter('Ready')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Ready</span>
+              </button>
+              <button onclick="applyStatusFilter('Completed')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-600"></span>
+                <span>Completed</span>
+              </button>
+              <button onclick="applyStatusFilter('Not started')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span>Not started</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Inbox Icon Button with Red Badge -->
+          <button onclick="showToast('Inbox: 2 new dock manifest messages from Newark Hub')" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-[#e2e5ec] dark:border-slate-700 flex items-center justify-center relative text-slate-600 dark:text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white dark:ring-slate-800"></span>
+          </button>
+
+          <!-- Notification Bell Icon Button with Red Badge -->
+          <button onclick="showToast('Alert: Dock #3 (TRC-204) loading ahead of schedule')" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-[#e2e5ec] dark:border-slate-700 flex items-center justify-center relative text-slate-600 dark:text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white dark:ring-slate-800"></span>
+          </button>
+
+          <!-- User Profile Button -->
+          <button onclick="switchMenu('team-roles')" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-[#e2e5ec] dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all" title="Dispatcher Profile">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </button>
+
+          <!-- + Quick Shipment CTA Button -->
+          <button onclick="openQuickShipmentModal()" class="h-8 px-3.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white text-[12px] font-medium flex items-center gap-1.5 shadow-sm transition-all active:scale-95">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>Quick shipment</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Viewport Container: uniform size for every menu -->
+      <main id="mainScrollViewport" class="flex-1 overflow-y-auto custom-scroll px-5 pb-6 pt-0.5">
+        <div id="dynamicViewContainer" class="view-animate-enter space-y-3.5">
+          <!-- Dynamically populated by JavaScript based on the active menu -->
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ==================== QUICK SHIPMENT MODAL ==================== -->
+  <div id="quickShipmentModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 view-animate-enter">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-[#15803d] dark:text-emerald-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M10 17h4V5H2v12h3m15 0h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1" />
+              <circle cx="7.5" cy="17.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Create Quick Shipment</h3>
+            <p class="text-[11px] text-slate-400">Assign a new truck & dock to warehouse bay</p>
+          </div>
+        </div>
+        <button onclick="closeQuickShipmentModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="submitQuickShipment(event)" class="space-y-3.5 mt-4 text-[12.5px]">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Truck ID</label>
+            <input id="qsTruckId" type="text" required value="TRC-948" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Vehicle Type</label>
+            <select id="qsVehicleType" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]">
+              <option value="box-standard">Standard Box Truck</option>
+              <option value="semi-sleeper">Sleeper Semi-Trailer</option>
+              <option value="box-ribbed">Ribbed Cargo Truck</option>
+              <option value="cargo-van">Commercial Sprinter Van</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Origin → Destination</label>
+            <input id="qsRoute" type="text" required value="NY → BOS" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Driver & Dock</label>
+            <input id="qsDriverDock" type="text" required value="Lucas Vance • Dock #10" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Payload Weight (kg)</label>
+            <input id="qsWeight" type="number" required value="4850" min="0" max="15000" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Initial Load Progress (%)</label>
+            <input id="qsProgress" type="number" required value="45" min="0" max="100" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+          <button type="button" onclick="closeQuickShipmentModal()" class="px-3.5 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white font-semibold shadow-sm">Dispatch to Bay</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== TRUCK INSPECTOR MODAL ==================== -->
+  <div id="truckInspectorModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 hidden items-center justify-center p-4">
+    <div id="truckInspectorContent" class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 view-animate-enter">
+      <!-- Populated dynamically when a truck card is clicked -->
+    </div>
+  </div>
+
+  <!-- ==================== UPGRADE PLAN MODAL ==================== -->
+  <div id="upgradeModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 view-animate-enter">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center text-white shadow-md mb-3">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 3h12l4 6-10 12L2 9l4-6zm2.5 2L5.8 9h12.4l-2.7-4H8.5zM12 18.2 17.6 11H6.4L12 18.2z"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 dark:text-white">Horizon Enterprise Logistics</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-300 mt-1">Unlock unlimited automated dock assignments, AI route weather re-routing, and real-time cold-chain telemetry across 50+ regional hubs.</p>
+      <div class="my-4 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 space-y-2 text-xs">
+        <div class="flex items-center justify-between font-semibold text-emerald-900 dark:text-emerald-200">
+          <span>Unlimited Warehouse Docks</span>
+          <span>Included</span>
+        </div>
+        <div class="flex items-center justify-between text-emerald-700 dark:text-emerald-300">
+          <span>Live GPS & Axle Load Telemetry</span>
+          <span>0.5s refresh</span>
+        </div>
+        <div class="flex items-center justify-between text-emerald-700 dark:text-emerald-300">
+          <span>Automated Customs Manifests</span>
+          <span>Active</span>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeUpgradeModal()" class="px-3.5 py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Maybe later</button>
+        <button onclick="activatePremiumPlan()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#15803d] hover:bg-[#166534] text-white shadow-sm">Activate Enterprise Trial</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST NOTIFICATION ==================== -->
+  <div id="toastBox" class="fixed bottom-6 right-6 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-300">
+    <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-xl shadow-xl text-xs font-medium flex items-center gap-2.5 border border-slate-700/60">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 dark:bg-emerald-600"></span>
+      <span id="toastText">Updated successfully</span>
+    </div>
+  </div>
+
+  <!-- ==================== SCRIPTS (load order matters) ==================== -->
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script src="assets/js/views/warehouse.js"></script>
+  <script src="assets/js/views/dashboard.js"></script>
+  <script src="assets/js/views/shipments.js"></script>
+  <script src="assets/js/views/fleet.js"></script>
+  <script src="assets/js/views/planning.js"></script>
+  <script src="assets/js/views/generic.js"></script>
+  <script src="assets/js/router.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

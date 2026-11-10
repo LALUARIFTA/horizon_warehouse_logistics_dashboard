@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horizon — Warehouse Operations & Logistics SaaS</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            horizon: {
+              green: '#15803d',
+              greenLight: '#16a34a',
+              greenSoft: '#dcfce7',
+              bgOuter: '#e4e7ec',
+              bgApp: '#f5f6f8',
+              border: '#eaecf0',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #e2e5ea;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    html.dark body {
+      background-color: #090d16;
+    }
+
+    /* Custom subtle scrollbars for sidebar & main content */
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.35);
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(107, 114, 128, 0.6);
+    }
+
+    /* Diagonal Hatched Progress Bar Track matching reference screenshot */
+    .progress-hatched-track {
+      background-image: repeating-linear-gradient(
+        -55deg,
+        #d5d9e0,
+        #d5d9e0 2px,
+        transparent 2px,
+        transparent 6px
+      );
+      background-color: #f3f4f6;
+    }
+    html.dark .progress-hatched-track {
+      background-image: repeating-linear-gradient(
+        -55deg,
+        #334155,
+        #334155 2px,
+        transparent 2px,
+        transparent 6px
+      );
+      background-color: #1e293b;
+    }
+
+    /* Progress bar smooth fill animation */
+    .progress-fill-bar {
+      transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Page View Transition Animations */
+    @keyframes viewSlideFadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.994);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .view-animate-enter {
+      animation: viewSlideFadeIn 0.36s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Card Stagger Cascade Animation */
+    @keyframes cardCascade {
+      0% {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .stagger-card {
+      opacity: 0;
+      animation: cardCascade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Accordion smooth collapse/expand */
+    .submenu-accordion {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.25s ease;
+    }
+    .submenu-accordion.open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    .submenu-inner {
+      overflow: hidden;
+    }
+
+    /* Truck Card Hover Polish */
+    .truck-card {
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+                  border-color 0.2s ease;
+    }
+    .truck-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.08), 0 4px 8px -4px rgba(15, 23, 42, 0.04);
+      border-color: #cbd5e1;
+    }
+    html.dark .truck-card:hover {
+      box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.5);
+      border-color: #334155;
+    }
+    .truck-card:hover .truck-illustration {
+      transform: translateX(-5px) scale(1.02);
+    }
+    .truck-illustration {
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Refresh Icon Spin */
+    @keyframes spinOnce {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin-anim {
+      animation: spinOnce 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Pulse indicator */
+    @keyframes subtlePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(1.18); }
+    }
+    .dot-pulse {
+      animation: subtlePulse 2s infinite ease-in-out;
+    }
+
+    /* Premium Card Mint Mesh Background */
+    .premium-gradient {
+      background: radial-gradient(circle at 80% 0%, #6ee7b7 0%, #a7f3d0 38%, #ecfdf5 75%, #ffffff 100%);
+    }
+    html.dark .premium-gradient {
+      background: radial-gradient(circle at 80% 0%, #065f46 0%, #064e3b 45%, #0f172a 100%);
+    }
+  </style>
+</head>
+<body class="p-2 sm:p-3.5 md:p-4 flex items-center justify-center">
+
+  <!-- OUTER FIXED FRAME: Never changes dimensions when switching menus or submenus -->
+  <div id="appFrame" class="w-full max-w-[1600px] h-[calc(100vh-16px)] sm:h-[calc(100vh-28px)] md:h-[calc(100vh-32px)] bg-[#f6f7f9] dark:bg-slate-900 rounded-[20px] shadow-[0_20px_60px_-15px_rgba(15,23,42,0.16)] border border-white/80 dark:border-slate-800 flex overflow-hidden relative transition-colors duration-300">
+
+    <!-- ==================== LEFT SIDEBAR ==================== -->
+    <aside id="sidebar" class="w-[248px] shrink-0 bg-[#f6f7f9] dark:bg-slate-900 border-r border-[#e6e8ec] dark:border-slate-800 flex flex-col h-full select-none transition-all duration-300 z-20">
+      
+      <!-- Brand Header -->
+      <div class="h-[60px] px-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5 cursor-pointer group" onclick="switchMenu('warehouse-operations')">
+          <div class="w-7 h-7 rounded-lg bg-[#15803d] flex items-center justify-center text-white font-bold text-base shadow-sm group-hover:bg-[#16a34a] transition-colors">
+            H
+          </div>
+          <span class="font-semibold text-[16px] tracking-tight text-slate-900 dark:text-white sidebar-text">Horizon</span>
+        </div>
+        <button id="collapseBtn" onclick="toggleSidebarCollapse()" title="Toggle Sidebar" class="w-7 h-7 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 flex items-center justify-center transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <line x1="9" y1="4" x2="9" y2="20" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Sidebar Search Input -->
+      <div class="px-3.5 pb-3 shrink-0 sidebar-search-wrap">
+        <div class="relative flex items-center">
+          <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input
+            id="sidebarSearchInput"
+            type="text"
+            placeholder="Search..."
+            oninput="handleSidebarSearch(this.value)"
+            class="w-full pl-8 pr-11 py-1.5 text-[12.5px] bg-white dark:bg-slate-800 border border-[#e2e5ec] dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#15803d]/25 focus:border-[#15803d] transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+          />
+          <kbd onclick="document.getElementById('sidebarSearchInput').focus()" class="cursor-pointer absolute right-2 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 dark:text-slate-400 bg-[#f3f4f6] dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600">⌘F</kbd>
+        </div>
+      </div>
+
+      <!-- Scrollable Navigation Menu Area (Scrolls smoothly if submenus are long) -->
+      <nav id="sidebarNav" class="flex-1 overflow-y-auto custom-scroll px-3 py-1 space-y-4">
+        
+        <!-- MAIN MENU GROUP -->
+        <div>
+          <div class="px-2.5 mb-1.5 text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase sidebar-text">
+            MAIN MENU
+          </div>
+
+          <div class="space-y-0.5" id="mainMenuContainer">
+            <!-- Dashboard -->
+            <button data-menu="dashboard" onclick="switchMenu('dashboard')" class="menu-btn w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group">
+              <span class="flex items-center gap-2.5 truncate">
+                <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 menu-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z" />
+                </svg>
+                <span class="sidebar-text truncate">Dashboard</span>
+              </span>
+            </button>
+
+            <!-- Fleet Management (Expandable Accordion) -->
+            <div class="menu-group">
+              <button onclick="toggleAccordion('fleetSubmenu', 'fleetChevron')" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group">
+                <span class="flex items-center gap-2.5 truncate">
+                  <svg class="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M10 17h4V5H2v12h3m15 0h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1" />
+                    <circle cx="7.5" cy="17.5" r="2.5" />
+                    <circle cx="17.5" cy="17.5" r="2.5" />
+                  </svg>
+                  <span class="sidebar-text truncate">Fleet Management</span>
+                </span>
+                <svg id="fleetChevron" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-300 rotate-180 sidebar-text" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </button>
+
+              <!-- Submenu with Tree Line -->
+              <div id="fleetSubmenu" class="submenu-accordion open sidebar-text">
+                <div class="submenu-inner">
+                  <div class="relative pl-4 ml-4 mt-0.5 mb-1 border-l border-slate-200 dark:border-slate-700 space-y-0.5">
+                    <button data-menu="all-vehicles" onclick="switchMenu('all-vehicles')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">All Vehicles</span>
+                    </button>
+                    <button data-menu="active-trucks" onclick="switchMenu('active-trucks')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Active Trucks</span>
+                    </button>
+                    <button data-menu="maintenance-repairs" onclick="switchMenu('maintenance-repairs')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Maintenance & Repairs</span>
+                      <span class="w-4 h-4 rounded-full bg-slate-800 dark:bg-slate-600 text-white text-[10px] font-semibold flex items-center justify-center">2</span>
+                    </button>
+                    <button data-menu="fuel-telematics" onclick="switchMenu('fuel-telematics')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Fuel & Telematics</span>
+                    </button>
+                    <button data-menu="drivers-directory" onclick="switchMenu('drivers-directory')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Drivers Directory</span>
+                    </button>
+                    <button data-menu="tire-axle-logs" onclick="switchMenu('tire-axle-logs')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Tire & Axle Sensors</span>
+                    </button>
+                    <button data-menu="cold-chain-units" onclick="switchMenu('cold-chain-units')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Cold-Chain Reefers</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipments & Deliveries (Expandable Accordion) -->
+            <div class="menu-group">
+              <button onclick="toggleAccordion('shipmentsSubmenu', 'shipmentsChevron')" class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group">
+                <span class="flex items-center gap-2.5 truncate">
+                  <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                  <span class="sidebar-text truncate">Shipments & Deliveries</span>
+                </span>
+                <svg id="shipmentsChevron" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-300 sidebar-text" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </button>
+
+              <!-- Submenu with Tree Line -->
+              <div id="shipmentsSubmenu" class="submenu-accordion sidebar-text">
+                <div class="submenu-inner">
+                  <div class="relative pl-4 ml-4 mt-0.5 mb-1 border-l border-slate-200 dark:border-slate-700 space-y-0.5">
+                    <button data-menu="active-shipments" onclick="switchMenu('active-shipments')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Active Shipments</span>
+                    </button>
+                    <button data-menu="unassigned-shipments" onclick="switchMenu('unassigned-shipments')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Unassigned Shipments</span>
+                      <span id="unassignedSubBadge" class="px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[10px] font-semibold">48</span>
+                    </button>
+                    <button data-menu="delivery-history" onclick="switchMenu('delivery-history')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Delivery History</span>
+                    </button>
+                    <button data-menu="customs-manifests" onclick="switchMenu('customs-manifests')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Customs & Manifests</span>
+                    </button>
+                    <button data-menu="damaged-claims" onclick="switchMenu('damaged-claims')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all">
+                      <span class="truncate">Claims & Returns</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Warehouse Operations (DEFAULT ACTIVE) -->
+            <button data-menu="warehouse-operations" onclick="switchMenu('warehouse-operations')" class="menu-btn active-menu w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] border border-slate-200/80 dark:border-slate-700 transition-all group">
+              <span class="flex items-center gap-2.5 truncate">
+                <svg class="w-4 h-4 shrink-0 text-[#15803d] dark:text-emerald-400 menu-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M3 21V8l9-5 9 5v13"/>
+                  <path d="M9 21v-6h6v6"/>
+                </svg>
+                <span class="sidebar-text truncate">Warehouse Operations</span>
+              </span>
+            </button>
+
+            <!-- Route Planning -->
+            <button data-menu="route-planning" onclick="switchMenu('route-planning')" class="menu-btn w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group">
+              <span class="flex items-center gap-2.5 truncate">
+                <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 menu-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <circle cx="6" cy="19" r="3"/>
+                  <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+                  <circle cx="18" cy="5" r="3"/>
+                </svg>
+                <span class="sidebar-text truncate">Route Planning</span>
+              </span>
+              <span class="w-4 h-4 rounded-full bg-slate-800 dark:bg-slate-600 text-white text-[10px] font-semibold flex items-center justify-center sidebar-text">3</span>
+            </button>
+
+            <!-- Analytics & Reports -->
+            <button data-menu="analytics-reports" onclick="switchMenu('analytics-reports')" class="menu-btn w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group">
+              <span class="flex items-center gap-2.5 truncate">
+                <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 menu-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <span class="sidebar-text truncate">Analytics & Reports</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SUPPORT GROUP -->
+        <div>
+          <div class="px-2.5 mb-1.5 text-[10px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase sidebar-text">
+            SUPPORT
+          </div>
+          <div class="space-y-0.5">
+            <!-- Customers -->
+            <button data-menu="customers" onclick="switchMenu('customers')" class="menu-btn w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group">
+              <span class="flex items-center gap-2.5 truncate">
+                <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 menu-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="16" rx="2"/>
+                  <circle cx="12" cy="10" r="3"/>
+                  <path d="M7 20v-1a5 5 0 0 1 10 0v1"/>
+                </svg>
+                <span class="sidebar-text truncate">Customers</span>
+              </span>
+            </button>
+
+            <!-- Team & Roles -->
+            <button data-menu="team-roles" onclick="switchMenu('team-roles')" class="menu-btn w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group">
+              <span class="flex items-center gap-2.5 truncate">
+                <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 menu-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span class="sidebar-text truncate">Team & Roles</span>
+              </span>
+            </button>
+
+            <!-- Help & support -->
+            <button data-menu="help-support" onclick="switchMenu('help-support')" class="menu-btn w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group">
+              <span class="flex items-center gap-2.5 truncate">
+                <svg class="w-4 h-4 shrink-0 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 menu-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                </svg>
+                <span class="sidebar-text truncate">Help & support</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer: Premium Card + Settings + Dark Mode -->
+      <div class="p-3 pt-2 shrink-0 space-y-2 border-t border-slate-200/60 dark:border-slate-800/80">
+        
+        <!-- Premium Promo Card -->
+        <div id="premiumCard" class="premium-gradient rounded-xl p-3 border border-emerald-200/70 dark:border-emerald-800/50 shadow-sm relative overflow-hidden sidebar-text">
+          <!-- Decorative soft diagonal sheen -->
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-md mb-2.5 border border-white/50">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 3h12l4 6-10 12L2 9l4-6zm2.5 2L5.8 9h12.4l-2.7-4H8.5zM12 18.2 17.6 11H6.4L12 18.2z"/>
+            </svg>
+          </div>
+          <div class="text-[12.5px] font-semibold text-slate-900 dark:text-white leading-snug">Premium plan</div>
+          <div class="text-[11px] text-slate-500 dark:text-slate-300 mt-0.5 mb-2.5 leading-tight">Sending more now is not a concern</div>
+          <button onclick="openUpgradeModal()" class="w-full py-1.5 px-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-lg text-[11.5px] font-semibold border border-slate-200/90 dark:border-slate-700 shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]">
+            <svg class="w-3.5 h-3.5 text-slate-700 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            Upgrade plan
+          </button>
+        </div>
+
+        <!-- Settings & Dark Mode -->
+        <div class="space-y-0.5 pt-0.5">
+          <button data-menu="settings" onclick="switchMenu('settings')" class="menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all">
+            <span class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-400 menu-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span class="sidebar-text">Settings</span>
+            </span>
+          </button>
+
+          <div onclick="toggleDarkMode()" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 cursor-pointer transition-all">
+            <span class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+              <span class="sidebar-text">Dark mode</span>
+            </span>
+            <button id="darkModeSwitch" role="switch" aria-checked="false" class="w-8 h-4.5 p-0.5 rounded-full bg-slate-200 dark:bg-[#16a34a] transition-colors flex items-center sidebar-text">
+              <span id="darkModeKnob" class="w-3.5 h-3.5 rounded-full bg-white shadow transform transition-transform duration-200"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== RIGHT MAIN WORKSPACE ==================== -->
+    <div class="flex-1 flex flex-col h-full min-w-0 bg-[#f6f7f9] dark:bg-slate-900 overflow-hidden">
+      
+      <!-- Sticky Top Header Bar -->
+      <header class="h-[60px] px-5 bg-[#f6f7f9] dark:bg-slate-900 flex items-center justify-between shrink-0 border-b border-transparent z-10">
+        <!-- Dynamic Page Title & Breadcrumb -->
+        <div class="flex items-center gap-2.5 min-w-0">
+          <h1 id="topHeaderTitle" class="text-[15.5px] font-semibold text-slate-800 dark:text-white tracking-tight truncate">
+            Warehouse operations
+          </h1>
+          <span id="topHeaderBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+            Live Telemetry
+          </span>
+        </div>
+
+        <!-- Right Header Controls -->
+        <div class="flex items-center gap-2">
+          <!-- Refresh Button -->
+          <button onclick="triggerLiveRefresh()" class="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-[#e2e5ec] dark:border-slate-700 text-[12px] font-medium flex items-center gap-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all active:scale-95">
+            <svg id="refreshIcon" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+            </svg>
+            <span class="hidden sm:inline">Refresh</span>
+          </button>
+
+          <!-- Global Status Filter Dropdown -->
+          <div class="relative">
+            <button onclick="toggleHeaderFilterMenu()" class="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-[#e2e5ec] dark:border-slate-700 text-[12px] font-medium flex items-center gap-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+              <svg class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="8" y1="12" x2="20" y2="12"/>
+                <line x1="12" y1="18" x2="20" y2="18"/>
+                <circle cx="6" cy="12" r="2"/>
+                <circle cx="10" cy="18" r="2"/>
+              </svg>
+              <span id="headerFilterLabel" class="hidden sm:inline">Filter</span>
+              <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </button>
+            <!-- Filter Popover -->
+            <div id="headerFilterDropdown" class="hidden absolute right-0 mt-1.5 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-1.5 z-50 text-[12px]">
+              <div class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Filter Status</div>
+              <button onclick="applyStatusFilter('ALL')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-between">
+                <span>All Trucks</span>
+                <span class="text-slate-400 text-[11px]" id="countAll">9</span>
+              </button>
+              <button onclick="applyStatusFilter('Loading')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>Loading</span>
+              </button>
+              <button onclick="applyStatusFilter('Ready')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Ready</span>
+              </button>
+              <button onclick="applyStatusFilter('Completed')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-600"></span>
+                <span>Completed</span>
+              </button>
+              <button onclick="applyStatusFilter('Not started')" class="w-full px-3 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span>Not started</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Inbox Icon Button with Red Badge -->
+          <button onclick="showToast('Inbox: 2 new dock manifest messages from Newark Hub')" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-[#e2e5ec] dark:border-slate-700 flex items-center justify-center relative text-slate-600 dark:text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white dark:ring-slate-800"></span>
+          </button>
+
+          <!-- Notification Bell Icon Button with Red Badge -->
+          <button onclick="showToast('Alert: Dock #3 (TRC-204) loading ahead of schedule')" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-[#e2e5ec] dark:border-slate-700 flex items-center justify-center relative text-slate-600 dark:text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 ring-2 ring-white dark:ring-slate-800"></span>
+          </button>
+
+          <!-- User Profile Button -->
+          <button onclick="switchMenu('team-roles')" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-[#e2e5ec] dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all" title="Dispatcher Profile">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </button>
+
+          <!-- + Quick Shipment CTA Button -->
+          <button onclick="openQuickShipmentModal()" class="h-8 px-3.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white text-[12px] font-medium flex items-center gap-1.5 shadow-sm transition-all active:scale-95">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>Quick shipment</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Viewport Container: Uniform size for every menu, scrolls smoothly when content is long -->
+      <main id="mainScrollViewport" class="flex-1 overflow-y-auto custom-scroll px-5 pb-6 pt-0.5">
+        <div id="dynamicViewContainer" class="view-animate-enter space-y-3.5">
+          <!-- Dynamically populated by JavaScript based on active menu -->
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ==================== QUICK SHIPMENT MODAL ==================== -->
+  <div id="quickShipmentModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 view-animate-enter">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-[#15803d] dark:text-emerald-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M10 17h4V5H2v12h3m15 0h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1" />
+              <circle cx="7.5" cy="17.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Create Quick Shipment</h3>
+            <p class="text-[11px] text-slate-400">Assign a new truck & dock to warehouse bay</p>
+          </div>
+        </div>
+        <button onclick="closeQuickShipmentModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="submitQuickShipment(event)" class="space-y-3.5 mt-4 text-[12.5px]">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Truck ID</label>
+            <input id="qsTruckId" type="text" required value="TRC-948" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Vehicle Type</label>
+            <select id="qsVehicleType" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]">
+              <option value="box-standard">Standard Box Truck</option>
+              <option value="semi-sleeper">Sleeper Semi-Trailer</option>
+              <option value="box-ribbed">Ribbed Cargo Truck</option>
+              <option value="cargo-van">Commercial Sprinter Van</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Origin → Destination</label>
+            <input id="qsRoute" type="text" required value="NY → BOS" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Driver & Dock</label>
+            <input id="qsDriverDock" type="text" required value="Lucas Vance • Dock #10" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Payload Weight (kg)</label>
+            <input id="qsWeight" type="number" required value="4850" min="0" max="15000" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+          <div>
+            <label class="block text-slate-600 dark:text-slate-300 font-medium mb-1">Initial Load Progress (%)</label>
+            <input id="qsProgress" type="number" required value="45" min="0" max="100" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-[#15803d]" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+          <button type="button" onclick="closeQuickShipmentModal()" class="px-3.5 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white font-semibold shadow-sm">Dispatch to Bay</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== TRUCK INSPECTOR MODAL ==================== -->
+  <div id="truckInspectorModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 hidden items-center justify-center p-4">
+    <div id="truckInspectorContent" class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-700 view-animate-enter">
+      <!-- Populated dynamically when a truck card is clicked -->
+    </div>
+  </div>
+
+  <!-- ==================== UPGRADE PLAN MODAL ==================== -->
+  <div id="upgradeModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 view-animate-enter">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center text-white shadow-md mb-3">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 3h12l4 6-10 12L2 9l4-6zm2.5 2L5.8 9h12.4l-2.7-4H8.5zM12 18.2 17.6 11H6.4L12 18.2z"/>
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-900 dark:text-white">Horizon Enterprise Logistics</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-300 mt-1">Unlock unlimited automated dock assignments, AI route weather re-routing, and real-time cold-chain telemetry across 50+ regional hubs.</p>
+      <div class="my-4 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 space-y-2 text-xs">
+        <div class="flex items-center justify-between font-semibold text-emerald-900 dark:text-emerald-200">
+          <span>Unlimited Warehouse Docks</span>
+          <span>Included</span>
+        </div>
+        <div class="flex items-center justify-between text-emerald-700 dark:text-emerald-300">
+          <span>Live GPS & Axle Load Telemetry</span>
+          <span>0.5s refresh</span>
+        </div>
+        <div class="flex items-center justify-between text-emerald-700 dark:text-emerald-300">
+          <span>Automated Customs Manifests</span>
+          <span>Active</span>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeUpgradeModal()" class="px-3.5 py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">Maybe later</button>
+        <button onclick="activatePremiumPlan()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#15803d] hover:bg-[#166534] text-white shadow-sm">Activate Enterprise Trial</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST NOTIFICATION ==================== -->
+  <div id="toastBox" class="fixed bottom-6 right-6 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-300">
+    <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-xl shadow-xl text-xs font-medium flex items-center gap-2.5 border border-slate-700/60">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 dark:bg-emerald-600"></span>
+      <span id="toastText">Updated successfully</span>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. REALISTIC SIDE-PROFILE COMMERCIAL TRUCK SVG GENERATOR (MATCHING IMAGE)
+    // =========================================================================
+    function getTruckSVG(type) {
+      // Every truck faces LEFT on a soft studio ground shadow, positioned on the right side of the card
+      if (type === 'semi-sleeper') {
+        // Long-nose aerodynamic sleeper tractor + high-cube trailer (matches TRC-551)
+        return `
+          <svg viewBox="0 0 250 115" class="w-[188px] h-[92px] truck-illustration select-none overflow-visible">
+            <defs>
+              <linearGradient id="bodyGradSemi" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="75%" stop-color="#f1f5f9"/>
+                <stop offset="100%" stop-color="#cbd5e1"/>
+              </linearGradient>
+              <linearGradient id="boxGradSemi" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="88%" stop-color="#e2e8f0"/>
+                <stop offset="100%" stop-color="#cbd5e1"/>
+              </linearGradient>
+              <radialGradient id="shadowSemi" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(15,23,42,0.42)"/>
+                <stop offset="65%" stop-color="rgba(15,23,42,0.16)"/>
+                <stop offset="100%" stop-color="rgba(15,23,42,0)"/>
+              </radialGradient>
+            </defs>
+            <!-- Ground Shadow -->
+            <ellipse cx="138" cy="100" rx="110" ry="7.5" fill="url(#shadowSemi)"/>
+            <!-- Semi Trailer Box (Right side) -->
+            <rect x="134" y="10" width="116" height="68" rx="2" fill="url(#boxGradSemi)" stroke="#cbd5e1" stroke-width="1"/>
+            <line x1="134" y1="73" x2="250" y2="73" stroke="#94a3b8" stroke-width="1.5"/>
+            <!-- Undercarriage & Fifth Wheel -->
+            <rect x="75" y="75" width="165" height="9" rx="2" fill="#334155"/>
+            <!-- Aerodynamic Sleeper Cab -->
+            <path d="M 80 78 L 132 78 L 132 20 C 115 20, 102 26, 92 40 L 72 40 L 58 56 L 32 60 C 27 61, 25 65, 25 71 L 25 81 L 80 81 Z" fill="url(#bodyGradSemi)" stroke="#cbd5e1" stroke-width="1"/>
+            <!-- Sleeper Cab Roof Fairing Line -->
+            <path d="M 93 40 Q 110 26 130 23" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+            <!-- Windshield & Side Window -->
+            <path d="M 60 55 L 73 42 L 88 42 L 88 56 Z" fill="#1e293b"/>
+            <rect x="94" y="43" width="11" height="12" rx="1.5" fill="#1e293b"/>
+            <!-- Side Mirror -->
+            <path d="M 68 45 L 64 45 L 64 56 L 68 56" fill="none" stroke="#334155" stroke-width="1.4"/>
+            <!-- Front Grille & Bumper -->
+            <rect x="23" y="76" width="14" height="7" rx="2" fill="#94a3b8"/>
+            <rect x="26" y="64" width="4" height="10" rx="1" fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.8"/>
+            <!-- Chrome Fuel Tank & Steps -->
+            <rect x="75" y="77" width="34" height="10" rx="4" fill="#94a3b8" stroke="#64748b" stroke-width="0.8"/>
+            <line x1="80" y1="80" x2="104" y2="80" stroke="#f8fafc" stroke-width="1.2"/>
+            <!-- Front Wheel -->
+            <g transform="translate(50, 86)">
+              <circle r="13.5" fill="#1e293b"/>
+              <circle r="9.5" fill="#475569"/>
+              <circle r="6.5" fill="#cbd5e1"/>
+              <circle r="3" fill="#334155"/>
+            </g>
+            <!-- Rear Tandem Wheels 1 -->
+            <g transform="translate(132, 86)">
+              <circle r="13.5" fill="#1e293b"/>
+              <circle r="9.5" fill="#475569"/>
+              <circle r="6.5" fill="#cbd5e1"/>
+              <circle r="3" fill="#334155"/>
+            </g>
+            <!-- Rear Tandem Wheels 2 -->
+            <g transform="translate(162, 86)">
+              <circle r="13.5" fill="#1e293b"/>
+              <circle r="9.5" fill="#475569"/>
+              <circle r="6.5" fill="#cbd5e1"/>
+              <circle r="3" fill="#334155"/>
+            </g>
+          </svg>
+        `;
+      }
+
+      if (type === 'box-ribbed') {
+        // Corrugated/ribbed box cargo truck (matches TRC-118)
+        return `
+          <svg viewBox="0 0 250 115" class="w-[188px] h-[92px] truck-illustration select-none overflow-visible">
+            <defs>
+              <linearGradient id="cabGradRib" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="80%" stop-color="#f1f5f9"/>
+                <stop offset="100%" stop-color="#cbd5e1"/>
+              </linearGradient>
+              <pattern id="ribPattern" width="9" height="60" patternUnits="userSpaceOnUse">
+                <rect x="0" y="0" width="6" height="60" fill="#f8fafc"/>
+                <rect x="6" y="0" width="3" height="60" fill="#cbd5e1"/>
+              </pattern>
+              <radialGradient id="shadowRib" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(15,23,42,0.42)"/>
+                <stop offset="68%" stop-color="rgba(15,23,42,0.15)"/>
+                <stop offset="100%" stop-color="rgba(15,23,42,0)"/>
+              </radialGradient>
+            </defs>
+            <!-- Ground Shadow -->
+            <ellipse cx="145" cy="100" rx="105" ry="7" fill="url(#shadowRib)"/>
+            <!-- Chassis Frame -->
+            <rect x="65" y="73" width="182" height="10" fill="#1e293b"/>
+            <!-- Corrugated Cargo Container -->
+            <rect x="108" y="14" width="142" height="60" rx="2" fill="url(#ribPattern)" stroke="#94a3b8" stroke-width="1"/>
+            <rect x="108" y="14" width="142" height="5" fill="#e2e8f0"/>
+            <rect x="108" y="70" width="142" height="4" fill="#cbd5e1"/>
+            <!-- Cab-Over Roof Fairing -->
+            <path d="M 68 35 C 76 23, 92 18, 106 18 L 106 35 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+            <!-- Cab Body -->
+            <path d="M 52 78 L 105 78 L 105 34 L 66 34 C 60 34, 56 39, 53 49 L 49 62 L 49 78 Z" fill="url(#cabGradRib)" stroke="#cbd5e1" stroke-width="1"/>
+            <!-- Dark Window -->
+            <path d="M 55 57 L 60 40 L 84 40 L 84 57 Z" fill="#1e293b"/>
+            <!-- Side Door Line & Handle -->
+            <rect x="62" y="62" width="6" height="2" rx="1" fill="#475569"/>
+            <!-- Front Bumper & Headlight -->
+            <rect x="46" y="74" width="16" height="8" rx="2" fill="#334155"/>
+            <rect x="48" y="67" width="4" height="6" rx="1" fill="#e2e8f0"/>
+            <!-- Side Fuel Tank / Battery Box -->
+            <rect x="106" y="75" width="38" height="9" rx="2" fill="#64748b"/>
+            <!-- Front Wheel -->
+            <g transform="translate(80, 86)">
+              <circle r="13.5" fill="#1e293b"/>
+              <circle r="9" fill="#475569"/>
+              <circle r="6" fill="#e2e8f0"/>
+              <circle r="2.5" fill="#1e293b"/>
+            </g>
+            <!-- Rear Dual Wheel -->
+            <g transform="translate(198, 86)">
+              <circle r="13.5" fill="#1e293b"/>
+              <circle r="9" fill="#475569"/>
+              <circle r="6" fill="#e2e8f0"/>
+              <circle r="2.5" fill="#1e293b"/>
+            </g>
+          </svg>
+        `;
+      }
+
+      if (type === 'cargo-van') {
+        // High-roof Sprinter cargo van (matches TRC-622)
+        return `
+          <svg viewBox="0 0 250 115" class="w-[188px] h-[92px] truck-illustration select-none overflow-visible">
+            <defs>
+              <linearGradient id="vanGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="72%" stop-color="#f1f5f9"/>
+                <stop offset="100%" stop-color="#cbd5e1"/>
+              </linearGradient>
+              <radialGradient id="shadowVan" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(15,23,42,0.42)"/>
+                <stop offset="68%" stop-color="rgba(15,23,42,0.14)"/>
+                <stop offset="100%" stop-color="rgba(15,23,42,0)"/>
+              </radialGradient>
+            </defs>
+            <!-- Ground Shadow -->
+            <ellipse cx="145" cy="100" rx="102" ry="7" fill="url(#shadowVan)"/>
+            <!-- Van Main Unibody -->
+            <path d="M 42 82 L 248 82 L 248 22 C 248 18, 244 16, 238 16 L 116 16 C 98 16, 86 24, 74 42 L 48 53 C 43 56, 40 62, 40 70 L 40 80 Z" fill="url(#vanGrad)" stroke="#cbd5e1" stroke-width="1"/>
+            <!-- Recessed Side Panel Stampings -->
+            <rect x="128" y="34" width="54" height="24" rx="2" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+            <rect x="190" y="34" width="52" height="24" rx="2" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+            <!-- Lower Rocker Molding -->
+            <path d="M 40 77 L 248 77 L 248 84 L 40 84 Z" fill="#334155"/>
+            <!-- Cab Windshield & Side Window -->
+            <path d="M 73 43 L 94 24 L 116 24 L 116 48 L 78 48 Z" fill="#1e293b"/>
+            <!-- Side Mirror -->
+            <rect x="73" y="40" width="5" height="9" rx="1.5" fill="#0f172a"/>
+            <!-- Headlight & Grille -->
+            <path d="M 41 58 L 51 55 L 50 63 L 41 64 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.8"/>
+            <!-- Door Handles -->
+            <rect x="110" y="54" width="6" height="2" rx="1" fill="#334155"/>
+            <rect x="134" y="54" width="6" height="2" rx="1" fill="#334155"/>
+            <!-- Front Wheel -->
+            <g transform="translate(76, 85)">
+              <circle r="13" fill="#1e293b"/>
+              <circle r="8.5" fill="#94a3b8"/>
+              <circle r="4" fill="#334155"/>
+            </g>
+            <!-- Rear Wheel -->
+            <g transform="translate(212, 85)">
+              <circle r="13" fill="#1e293b"/>
+              <circle r="8.5" fill="#94a3b8"/>
+              <circle r="4" fill="#334155"/>
+            </g>
+          </svg>
+        `;
+      }
+
+      // Default: 'box-standard' (Clean white box truck matching TRC-204, TRC-392, TRC-405)
+      return `
+        <svg viewBox="0 0 250 115" class="w-[188px] h-[92px] truck-illustration select-none overflow-visible">
+          <defs>
+            <linearGradient id="cabGradStd" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="78%" stop-color="#f1f5f9"/>
+              <stop offset="100%" stop-color="#cbd5e1"/>
+            </linearGradient>
+            <linearGradient id="boxGradStd" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="85%" stop-color="#e2e8f0"/>
+              <stop offset="100%" stop-color="#cbd5e1"/>
+            </linearGradient>
+            <radialGradient id="shadowStd" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(15,23,42,0.44)"/>
+              <stop offset="68%" stop-color="rgba(15,23,42,0.16)"/>
+              <stop offset="100%" stop-color="rgba(15,23,42,0)"/>
+            </radialGradient>
+          </defs>
+          <!-- Studio Floor Shadow -->
+          <ellipse cx="144" cy="100" rx="106" ry="7.5" fill="url(#shadowStd)"/>
+          <!-- Dark Chassis Frame -->
+          <rect x="64" y="73" width="184" height="11" rx="2" fill="#1e293b"/>
+          <!-- Smooth White Box Cargo Body -->
+          <rect x="108" y="12" width="142" height="63" rx="2" fill="url(#boxGradStd)" stroke="#cbd5e1" stroke-width="1"/>
+          <line x1="108" y1="71" x2="250" y2="71" stroke="#94a3b8" stroke-width="1.2"/>
+          <!-- Cab Roof Aerodynamic Deflector -->
+          <path d="M 68 32 C 77 19, 92 14, 107 14 L 107 32 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+          <!-- Cab-Over Body -->
+          <path d="M 48 79 L 105 79 L 105 31 L 64 31 C 57 31, 53 37, 50 48 L 46 62 L 46 79 Z" fill="url(#cabGradStd)" stroke="#cbd5e1" stroke-width="1"/>
+          <!-- Tinted Cab Window -->
+          <path d="M 52 57 L 57 37 L 85 37 L 85 55 L 52 57 Z" fill="#1e293b"/>
+          <rect x="90" y="38" width="9" height="14" rx="1.5" fill="#1e293b"/>
+          <!-- Side Mirror Arm -->
+          <path d="M 54 39 L 48 39 L 48 52 L 53 52" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+          <!-- Door Handle & Trim -->
+          <rect x="64" y="63" width="6" height="2" rx="1" fill="#334155"/>
+          <path d="M 46 73 L 105 73 L 105 81 L 46 81 Z" fill="#334155"/>
+          <!-- Side Underrun Guard & Fuel Tank -->
+          <rect x="114" y="75" width="46" height="9" rx="2" fill="#475569"/>
+          <!-- Front Wheel -->
+          <g transform="translate(82, 86)">
+            <circle r="13.5" fill="#0f172a"/>
+            <circle r="9.5" fill="#334155"/>
+            <circle r="6" fill="#cbd5e1"/>
+            <circle r="2.5" fill="#0f172a"/>
+          </g>
+          <!-- Rear Wheel -->
+          <g transform="translate(202, 86)">
+            <circle r="13.5" fill="#0f172a"/>
+            <circle r="9.5" fill="#334155"/>
+            <circle r="6" fill="#cbd5e1"/>
+            <circle r="2.5" fill="#0f172a"/>
+          </g>
+        </svg>
+      `;
+    }
+
+    // =========================================================================
+    // 2. APPLICATION STATE & MOCK DATA (EXACT MATCH TO SCREENSHOT + SUBMENUS)
+    // =========================================================================
+    const state = {
+      activeMenu: 'warehouse-operations',
+      statusFilter: 'ALL',
+      searchQuery: '',
+      layoutMode: 'grid', // 'grid' | 'list'
+      sidebarCollapsed: false,
+      lastUpdated: 'Today, 14:32 PM',
+      kpis: {
+        trucksInside: 12,
+        unassignedShipments: 48,
+        activeLoadingDocs: 6,
+        totalLoadingDocs: 10,
+        dispatchReady: 4
+      },
+      // Exact 6 visible cards from screenshot + 3 bottom cards for smooth scrolling
+      trucks: [
+        {
+          id: 'TRC-204',
+          status: 'Loading',
+          weightText: '6,500 kg',
+          weightPctText: '(48%)',
+          route: 'NY → NJ',
+          driver: 'Marcus Lee',
+          dock: 'Dock #3',
+          progress: 48,
+          vehicleType: 'box-standard'
+        },
+        {
+          id: 'TRC-118',
+          status: 'Not started',
+          weightText: '0kg',
+          weightPctText: '(0%)',
+          route: 'NY → CHI',
+          driver: 'Hannah Cruz',
+          dock: 'Dock #1',
+          progress: 0,
+          vehicleType: 'box-ribbed'
+        },
+        {
+          id: 'TRC-551',
+          status: 'Completed',
+          weightText: '8,870 kg',
+          weightPctText: '(92%)',
+          route: 'NY → BOS',
+          driver: 'Alexi Park',
+          dock: 'Dock #7',
+          progress: 89,
+          vehicleType: 'semi-sleeper'
+        },
+        {
+          id: 'TRC-392',
+          status: 'Ready',
+          weightText: '10,000 kg',
+          weightPctText: '(100%)',
+          route: 'NY → PHL',
+          driver: 'David Kim',
+          dock: 'Dock #5',
+          progress: 100,
+          vehicleType: 'box-standard'
+        },
+        {
+          id: 'TRC-405',
+          status: 'Loading',
+          weightText: '850 kg',
+          weightPctText: '(12%)',
+          route: 'NY → DC',
+          driver: 'Marcus Lee',
+          dock: 'Dock #2',
+          progress: 15,
+          vehicleType: 'box-standard'
+        },
+        {
+          id: 'TRC-622',
+          status: 'Loading',
+          weightText: '7,400kg',
+          weightPctText: '(70%)',
+          route: 'NY → BAL',
+          driver: 'Marcus Lee',
+          dock: 'Dock #8',
+          progress: 65,
+          vehicleType: 'cargo-van'
+        },
+        {
+          id: 'TRC-710',
+          status: 'Not started',
+          weightText: '0 kg',
+          weightPctText: '(0%)',
+          route: 'NY → ATL',
+          driver: 'Elena Rostova',
+          dock: 'Dock #4',
+          progress: 0,
+          vehicleType: 'box-standard'
+        },
+        {
+          id: 'TRC-809',
+          status: 'Loading',
+          weightText: '5,200 kg',
+          weightPctText: '(52%)',
+          route: 'NY → MIA',
+          driver: 'Devon Brooks',
+          dock: 'Dock #6',
+          progress: 52,
+          vehicleType: 'box-standard'
+        },
+        {
+          id: 'TRC-914',
+          status: 'Loading',
+          weightText: '8,100 kg',
+          weightPctText: '(81%)',
+          route: 'NY → TOR',
+          driver: 'Samira Patel',
+          dock: 'Dock #9',
+          progress: 81,
+          vehicleType: 'box-ribbed'
+        }
+      ],
+      unassignedQueue: [
+        { id: 'SHP-8821', client: 'Nordic Retail Corp', route: 'NY → BOS', pallets: 18, weight: '4,200 kg', priority: 'High', eta: '15:30 PM' },
+        { id: 'SHP-8824', client: 'Apex Medical Supply', route: 'NY → PHL', pallets: 12, weight: '2,950 kg', priority: 'Urgent', eta: '16:00 PM' },
+        { id: 'SHP-8829', client: 'Metro Fresh Grocers', route: 'NY → DC', pallets: 24, weight: '7,800 kg', priority: 'Normal', eta: '16:45 PM' },
+        { id: 'SHP-8832', client: 'Vanguard Electronics', route: 'NY → CHI', pallets: 30, weight: '9,100 kg', priority: 'High', eta: '17:15 PM' },
+        { id: 'SHP-8836', client: 'Harbor Home Goods', route: 'NY → NJ', pallets: 14, weight: '3,400 kg', priority: 'Normal', eta: '18:00 PM' },
+        { id: 'SHP-8840', client: 'Solis Industrial Parts', route: 'NY → BAL', pallets: 22, weight: '6,300 kg', priority: 'Normal', eta: '18:30 PM' }
+      ]
+    };
+
+    const menuTitles = {
+      'dashboard': 'Executive Dashboard',
+      'all-vehicles': 'Fleet Management • All Vehicles',
+      'active-trucks': 'Fleet Management • Active Trucks',
+      'maintenance-repairs': 'Fleet Management • Maintenance & Repairs',
+      'fuel-telematics': 'Fleet Management • Fuel & Telematics',
+      'drivers-directory': 'Fleet Management • Drivers Directory',
+      'tire-axle-logs': 'Fleet Management • Tire & Axle Sensors',
+      'cold-chain-units': 'Fleet Management • Cold-Chain Reefers',
+      'active-shipments': 'Shipments & Deliveries • Active Shipments',
+      'unassigned-shipments': 'Shipments & Deliveries • Unassigned Shipments',
+      'delivery-history': 'Shipments & Deliveries • Delivery History',
+      'customs-manifests': 'Shipments & Deliveries • Customs & Manifests',
+      'damaged-claims': 'Shipments & Deliveries • Claims & Returns',
+      'warehouse-operations': 'Warehouse operations',
+      'route-planning': 'Route Planning & Corridor Telemetry',
+      'analytics-reports': 'Analytics & Reports',
+      'customers': 'Customers & SLA Directory',
+      'team-roles': 'Team & Roles Permissions',
+      'help-support': 'Help & Support Center',
+      'settings': 'Workspace Settings'
+    };
+
+    // =========================================================================
+    // 3. STATUS BADGE HELPER
+    // =========================================================================
+    function getStatusBadgeHTML(status) {
+      const normalized = status.toLowerCase();
+      if (normalized === 'loading') {
+        return `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 dot-pulse"></span>
+            Loading
+          </span>
+        `;
+      }
+      if (normalized === 'completed') {
+        return `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16a34a]"></span>
+            Completed
+          </span>
+        `;
+      }
+      if (normalized === 'ready') {
+        return `
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#16a34a]"></span>
+            Ready
+          </span>
+        `;
+      }
+      return `
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-700 dark:bg-slate-400"></span>
+          ${status}
+        </span>
+      `;
+    }
+
+    // =========================================================================
+    // 4. VIEW RENDERERS (EVERY MENU & SUBMENU WITH RICH SCROLLABLE CONTENT)
+    // =========================================================================
+
+    // --- VIEW 1: WAREHOUSE OPERATIONS (EXACT MATCH TO REFERENCE SCREENSHOT) ---
+    function renderWarehouseOperationsView() {
+      const filteredTrucks = state.trucks.filter(t => {
+        const matchesStatus = state.statusFilter === 'ALL' || t.status.toLowerCase() === state.statusFilter.toLowerCase();
+        const q = state.searchQuery.trim().toLowerCase();
+        const matchesQuery = !q || t.id.toLowerCase().includes(q) || t.driver.toLowerCase().includes(q) || t.route.toLowerCase().includes(q) || t.dock.toLowerCase().includes(q);
+        return matchesStatus && matchesQuery;
+      });
+
+      const usagePercent = Math.round((state.kpis.activeLoadingDocs / state.kpis.totalLoadingDocs) * 100);
+      const readyPadded = String(state.kpis.dispatchReady).padStart(2, '0');
+
+      const cardsHTML = filteredTrucks.map((truck, idx) => {
+        const delayMs = idx * 45;
+        if (state.layoutMode === 'list') {
+          return `
+            <div onclick="openTruckInspector('${truck.id}')" style="animation-delay: ${delayMs}ms" class="stagger-card truck-card cursor-pointer bg-[#f8f9fb] dark:bg-slate-800/70 rounded-xl p-3.5 border border-[#e6e8ec] dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div class="flex items-center gap-4 w-full sm:w-auto">
+                <div class="w-28 h-16 flex items-center justify-center shrink-0 overflow-hidden">
+                  ${getTruckSVG(truck.vehicleType)}
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-[14.5px] text-slate-900 dark:text-white">${truck.id}</span>
+                    ${getStatusBadgeHTML(truck.status)}
+                  </div>
+                  <div class="text-[12px] text-slate-500 dark:text-slate-400 mt-1">
+                    ${truck.weightText} • ${truck.weightPctText} &nbsp;|&nbsp; <strong class="text-slate-700 dark:text-slate-200">${truck.route}</strong> &nbsp;|&nbsp; ${truck.driver} • ${truck.dock}
+                  </div>
+                </div>
+              </div>
+              <div class="w-full sm:w-64 shrink-0 bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200/70 dark:border-slate-700">
+                <div class="flex items-center justify-between text-[11.5px] text-slate-500 dark:text-slate-400 mb-1.5">
+                  <span>Load progress</span>
+                  <span class="font-semibold text-slate-700 dark:text-slate-200">${truck.progress}%</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full progress-hatched-track overflow-hidden">
+                  <div class="h-full bg-[#16a34a] rounded-full progress-fill-bar" data-target-width="${truck.progress}%" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // Default 3-Column Card matching the reference screenshot pixel-for-pixel
+        return `
+          <div onclick="openTruckInspector('${truck.id}')" style="animation-delay: ${delayMs}ms" class="stagger-card truck-card cursor-pointer bg-[#f6f7f9] dark:bg-slate-800/60 rounded-[14px] p-2.5 border border-[#eaecf0] dark:border-slate-700/80 flex flex-col justify-between overflow-hidden">
+            
+            <!-- Top Gray Showcase Area with Status Pill, Truck Illustration, ID & Weight -->
+            <div class="relative pt-1 px-1.5 pb-2.5 min-h-[132px] flex flex-col justify-between overflow-hidden">
+              <!-- Status Badge Top Left -->
+              <div class="z-10">
+                ${getStatusBadgeHTML(truck.status)}
+              </div>
+
+              <!-- Side-profile Truck SVG Top Right -->
+              <div class="absolute -right-2 top-2.5 pointer-events-none">
+                ${getTruckSVG(truck.vehicleType)}
+              </div>
+
+              <!-- Truck ID & Weight Bottom Left -->
+              <div class="mt-9 z-10">
+                <div class="text-[15px] font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
+                  ${truck.id}
+                </div>
+                <div class="text-[12px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                  ${truck.weightText} <span class="mx-0.5">•</span> ${truck.weightPctText}
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom White Route & Progress Subcard -->
+            <div class="bg-white dark:bg-slate-900 rounded-[10px] p-3 border border-[#eaecf0]/90 dark:border-slate-700/70 shadow-[0_1px_2px_rgba(15,23,42,0.02)]">
+              <div class="flex items-center justify-between text-[12px] mb-2">
+                <span class="font-bold text-slate-800 dark:text-white tracking-tight">${truck.route}</span>
+                <span class="text-slate-500 dark:text-slate-400 text-[11.5px] truncate ml-2">${truck.driver} &nbsp;•&nbsp; ${truck.dock}</span>
+              </div>
+              <div class="flex items-center justify-between text-[11.5px] text-slate-400 dark:text-slate-400 mb-1.5">
+                <span>Load progress</span>
+                <span class="text-slate-600 dark:text-slate-300 font-medium">${truck.progress}%</span>
+              </div>
+              <!-- Hatched Striped Track + Solid Green Fill -->
+              <div class="w-full h-[6px] rounded-full progress-hatched-track overflow-hidden flex items-center">
+                <div class="h-full bg-[#16a34a] rounded-full progress-fill-bar" data-target-width="${truck.progress}%" style="width: 0%"></div>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <!-- 1. WAREHOUSE OVERVIEW KPI CARD -->
+        <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-[#e6e8ec] dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
+          <!-- Card Header -->
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-[14px] font-semibold text-slate-800 dark:text-white">Warehouse overview</h2>
+            <div class="flex items-center gap-2 text-[12px] text-slate-400">
+              <span>Last updated: <span id="lastUpdatedLabel">${state.lastUpdated}</span></span>
+              <button onclick="triggerLiveRefresh()" class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="5" r="1.75"/><circle cx="12" cy="12" r="1.75"/><circle cx="12" cy="19" r="1.75"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4-Column KPI Metrics Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#eaecf0] dark:divide-slate-700/80">
+            
+            <!-- Metric 1: Trucks inside -->
+            <div class="py-2 sm:py-0.5 sm:pr-6">
+              <div class="flex items-center gap-2 text-[12.5px] text-slate-500 dark:text-slate-400 font-medium">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M10 17h4V5H2v12h3m15 0h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/>
+                  <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+                </svg>
+                <span>Trucks inside</span>
+              </div>
+              <div class="text-[22px] font-bold text-slate-900 dark:text-white mt-3 leading-none tracking-tight">
+                ${state.kpis.trucksInside}
+              </div>
+              <div class="text-[11.5px] text-slate-400 mt-1.5">Active status</div>
+            </div>
+
+            <!-- Metric 2: Unassigned shipments -->
+            <div class="py-2 sm:py-0.5 sm:px-6">
+              <div class="flex items-center gap-2 text-[12.5px] text-slate-500 dark:text-slate-400 font-medium">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+                <span>Unassigned shipments</span>
+              </div>
+              <div class="text-[22px] font-bold text-slate-900 dark:text-white mt-3 leading-none tracking-tight">
+                ${state.kpis.unassignedShipments}
+              </div>
+              <div class="text-[11.5px] text-slate-400 mt-1.5">Pending status</div>
+            </div>
+
+            <!-- Metric 3: active loading docs -->
+            <div class="py-2 sm:py-0.5 sm:px-6">
+              <div class="flex items-center gap-2 text-[12.5px] text-slate-500 dark:text-slate-400 font-medium">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"/>
+                  <circle cx="12" cy="12" r="3"/>
+                  <line x1="12" y1="3" x2="12" y2="9"/>
+                  <line x1="12" y1="15" x2="12" y2="21"/>
+                  <line x1="3" y1="12" x2="9" y2="12"/>
+                  <line x1="15" y1="12" x2="21" y2="12"/>
+                </svg>
+                <span>active loading docs</span>
+              </div>
+              <div class="text-[22px] font-bold text-slate-900 dark:text-white mt-3 leading-none tracking-tight">
+                ${state.kpis.activeLoadingDocs}/${state.kpis.totalLoadingDocs}
+              </div>
+              <div class="text-[11.5px] text-slate-400 mt-1.5">${usagePercent}% total usage</div>
+            </div>
+
+            <!-- Metric 4: Dispatch ready -->
+            <div class="py-2 sm:py-0.5 sm:pl-6">
+              <div class="flex items-center gap-2 text-[12.5px] text-slate-500 dark:text-slate-400 font-medium">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>Dispatch ready</span>
+              </div>
+              <div class="text-[22px] font-bold text-slate-900 dark:text-white mt-3 leading-none tracking-tight">
+                ${readyPadded}
+              </div>
+              <div class="text-[11.5px] text-slate-400 mt-1.5">Ready for today</div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 2. TRUCKS CURRENTLY IN WAREHOUSE GRID SECTION -->
+        <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-[#e6e8ec] dark:border-slate-800 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
+          
+          <!-- Section Toolbar -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-2.5">
+              <h2 class="text-[14px] font-semibold text-slate-800 dark:text-white">Trucks currently in warehouse</h2>
+              ${state.statusFilter !== 'ALL' ? `
+                <button onclick="applyStatusFilter('ALL')" class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-[#15803d] dark:text-emerald-300 text-[11px] font-medium flex items-center gap-1">
+                  <span>${state.statusFilter}</span>
+                  <span>×</span>
+                </button>
+              ` : ''}
+            </div>
+
+            <!-- Right Search, Filter & Grid Toggle -->
+            <div class="flex items-center gap-2">
+              <!-- Search for truck ID -->
+              <div class="relative flex items-center">
+                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+                <input
+                  type="text"
+                  value="${state.searchQuery}"
+                  oninput="handleTruckSearch(this.value)"
+                  placeholder="Search for truck ID"
+                  class="w-44 sm:w-52 pl-8 pr-3 py-1.5 text-[12px] bg-white dark:bg-slate-900 border border-[#e2e5ec] dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:border-[#15803d]"
+                />
+              </div>
+
+              <!-- Status Filter cycle button -->
+              <button onclick="cycleStatusFilter()" class="h-8 px-3 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-[#e2e5ec] dark:border-slate-700 text-[12px] font-medium flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/>
+                  <circle cx="6" cy="12" r="2"/><circle cx="10" cy="18" r="2"/>
+                </svg>
+                <span>${state.statusFilter === 'ALL' ? 'Filter' : state.statusFilter}</span>
+                <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+
+              <!-- Grid / List View Switcher -->
+              <button onclick="toggleLayoutMode()" class="h-8 px-3 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-[#e2e5ec] dark:border-slate-700 text-[12px] font-medium flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                <span>${state.layoutMode === 'grid' ? 'Grid' : 'List'}</span>
+                <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Truck Cards Grid -->
+          ${filteredTrucks.length === 0 ? `
+            <div class="py-14 text-center">
+              <div class="text-slate-400 text-sm font-medium">No trucks match your filter criteria</div>
+              <button onclick="resetTruckFilters()" class="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#15803d] text-white">Reset Filters</button>
+            </div>
+          ` : `
+            <div class="${state.layoutMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5' : 'space-y-3'}">
+              ${cardsHTML}
+            </div>
+          `}
+        </section>
+      `;
+    }
+
+    // --- VIEW 2: EXECUTIVE DASHBOARD ---
+    function renderDashboardView() {
+      const corridorMetrics = [
+        { route: 'New York → Boston (I-95 N)', volume: '142 tons', onTime: '98.4%', trucks: 14, pct: 92 },
+        { route: 'New York → Chicago (I-80 W)', volume: '218 tons', onTime: '94.1%', trucks: 19, pct: 78 },
+        { route: 'New York → Philadelphia (I-95 S)', volume: '184 tons', onTime: '99.2%', trucks: 16, pct: 96 },
+        { route: 'New York → Washington DC', volume: '115 tons', onTime: '91.8%', trucks: 11, pct: 68 },
+        { route: 'New York → Baltimore Port', volume: '96 tons', onTime: '96.5%', trucks: 9, pct: 84 }
+      ];
+
+      return `
+        <!-- Top Executive Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          ${[
+            { label: 'Daily Freight Throughput', val: '755.4 t', sub: '+14.2% vs yesterday', color: 'text-emerald-600' },
+            { label: 'On-Time Dispatch SLA', val: '96.8%', sub: 'Above 95.0% target', color: 'text-emerald-600' },
+            { label: 'Average Dock Turnaround', val: '42 min', sub: '-6 min improvement', color: 'text-emerald-600' },
+            { label: 'Active Regional Fleet', val: '69 / 74', sub: '2 units in maintenance', color: 'text-amber-600' }
+          ].map((item, i) => `
+            <div style="animation-delay:${i*50}ms" class="stagger-card bg-white dark:bg-slate-800 rounded-2xl p-4 border border-[#e6e8ec] dark:border-slate-700">
+              <div class="text-xs font-medium text-slate-400">${item.label}</div>
+              <div class="text-2xl font-bold text-slate-900 dark:text-white mt-2">${item.val}</div>
+              <div class="text-[11px] font-medium ${item.color} mt-1.5">${item.sub}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Middle Row: Hourly Dock Volume Chart + Corridor Utilization -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
+          <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Hourly Warehouse Loading Throughput</h3>
+                <p class="text-xs text-slate-400">Pallets loaded across Docks #1 – #10 today</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-[#15803d] dark:text-emerald-300 text-xs font-semibold">Peak: 14:00 (210 pallets)</span>
+            </div>
+            <!-- Animated Bar Chart -->
+            <div class="h-48 flex items-end gap-2.5 pt-6 px-2 border-b border-slate-100 dark:border-slate-700">
+              ${[
+                { hr: '06:00', h: 35, val: 68 },
+                { hr: '07:00', h: 48, val: 92 },
+                { hr: '08:00', h: 64, val: 128 },
+                { hr: '09:00', h: 78, val: 156 },
+                { hr: '10:00', h: 70, val: 140 },
+                { hr: '11:00', h: 86, val: 174 },
+                { hr: '12:00', h: 60, val: 118 },
+                { hr: '13:00', h: 90, val: 185 },
+                { hr: '14:00', h: 100, val: 210 },
+                { hr: '15:00', h: 74, val: 148 }
+              ].map(bar => `
+                <div class="flex-1 flex flex-col items-center gap-2 group">
+                  <span class="text-[10px] font-semibold text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">${bar.val}</span>
+                  <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-t-md h-32 flex items-end overflow-hidden">
+                    <div class="w-full bg-[#16a34a] group-hover:bg-[#15803d] rounded-t-md transition-all duration-700" style="height:${bar.h}%"></div>
+                  </div>
+                  <span class="text-[10px] text-slate-400">${bar.hr}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Corridor Performance -->
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700 space-y-3.5">
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Freight Corridor Capacity</h3>
+            <div class="space-y-3">
+              ${corridorMetrics.map(c => `
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="font-medium text-slate-700 dark:text-slate-200">${c.route}</span>
+                    <span class="text-slate-500">${c.volume} • ${c.pct}%</span>
+                  </div>
+                  <div class="w-full h-1.5 rounded-full progress-hatched-track overflow-hidden">
+                    <div class="h-full bg-[#16a34a] rounded-full progress-fill-bar" data-target-width="${c.pct}%" style="width:0%"></div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Live Dock Activity Table (ensures smooth scrolling test) -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Active Dock Assignments & Bay Telemetry</h3>
+            <button onclick="switchMenu('warehouse-operations')" class="text-xs font-semibold text-[#15803d] dark:text-emerald-400 hover:underline">Open Warehouse Grid →</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-slate-100 dark:border-slate-700 text-slate-400 uppercase text-[10.5px]">
+                  <th class="pb-2.5 font-semibold">Truck ID</th>
+                  <th class="pb-2.5 font-semibold">Dock Bay</th>
+                  <th class="pb-2.5 font-semibold">Assigned Driver</th>
+                  <th class="pb-2.5 font-semibold">Corridor</th>
+                  <th class="pb-2.5 font-semibold">Payload</th>
+                  <th class="pb-2.5 font-semibold">Progress</th>
+                  <th class="pb-2.5 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                ${state.trucks.map(t => `
+                  <tr onclick="openTruckInspector('${t.id}')" class="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors">
+                    <td class="py-2.5 font-bold text-slate-800 dark:text-white">${t.id}</td>
+                    <td class="py-2.5 text-slate-600 dark:text-slate-300">${t.dock}</td>
+                    <td class="py-2.5 text-slate-600 dark:text-slate-300">${t.driver}</td>
+                    <td class="py-2.5 font-semibold text-slate-800 dark:text-slate-200">${t.route}</td>
+                    <td class="py-2.5 text-slate-500">${t.weightText}</td>
+                    <td class="py-2.5 w-40">
+                      <div class="w-32 h-1.5 rounded-full progress-hatched-track overflow-hidden">
+                        <div class="h-full bg-[#16a34a] rounded-full progress-fill-bar" data-target-width="${t.progress}%" style="width:0%"></div>
+                      </div>
+                    </td>
+                    <td class="py-2.5">${getStatusBadgeHTML(t.status)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- VIEW 3: UNASSIGNED SHIPMENTS (INTERACTIVE QUEUE) ---
+    function renderUnassignedShipmentsView() {
+      return `
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-800 dark:text-white">Unassigned Shipments Queue (${state.kpis.unassignedShipments} pending)</h2>
+              <p class="text-xs text-slate-400">Assign staged pallet manifests directly to available warehouse docks</p>
+            </div>
+            <button onclick="openQuickShipmentModal()" class="px-3.5 py-2 rounded-lg bg-[#15803d] text-white text-xs font-semibold self-start sm:self-auto">+ Create Shipment Manifest</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+            ${state.unassignedQueue.map((item, idx) => `
+              <div style="animation-delay:${idx*50}ms" class="stagger-card bg-[#f6f7f9] dark:bg-slate-800/60 rounded-xl p-4 border border-slate-200/80 dark:border-slate-700 flex flex-col justify-between gap-3">
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-sm text-slate-900 dark:text-white">${item.id}</span>
+                    <span class="px-2 py-0.5 rounded text-[10.5px] font-semibold ${item.priority === 'Urgent' ? 'bg-rose-500/15 text-rose-600' : item.priority === 'High' ? 'bg-amber-500/15 text-amber-700' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">${item.priority} Priority</span>
+                  </div>
+                  <div class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-1">${item.client}</div>
+                  <div class="mt-3 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 grid grid-cols-3 text-center text-[11px]">
+                    <div>
+                      <div class="text-slate-400">Route</div>
+                      <div class="font-bold text-slate-800 dark:text-white mt-0.5">${item.route}</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-400">Volume</div>
+                      <div class="font-bold text-slate-800 dark:text-white mt-0.5">${item.pallets} plts</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-400">Weight</div>
+                      <div class="font-bold text-slate-800 dark:text-white mt-0.5">${item.weight}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                  <span class="text-[11px] text-slate-400">Target Cutoff: ${item.eta}</span>
+                  <button onclick="assignPendingShipment('${item.id}')" class="px-3 py-1.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white text-xs font-semibold transition-all active:scale-95">
+                    Assign to Dock
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- VIEW 4: ROUTE PLANNING (INTERACTIVE SVG MAP & CORRIDORS) ---
+    function renderRoutePlanningView() {
+      return `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
+          <!-- Interactive Northeast Corridor SVG Telemetry Map -->
+          <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h2 class="text-sm font-semibold text-slate-800 dark:text-white">Northeast Freight Corridor Live Telemetry</h2>
+                <p class="text-xs text-slate-400">Active GPS transponders connecting NY Central Hub to regional terminals</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-semibold">3 Weather Advisories</span>
+            </div>
+
+            <div class="relative rounded-xl bg-[#f1f5f9] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden h-[340px]">
+              <svg viewBox="0 0 700 340" class="w-full h-full">
+                <defs>
+                  <pattern id="mapGrid" width="35" height="35" patternUnits="userSpaceOnUse">
+                    <path d="M 35 0 L 0 0 0 35" fill="none" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+                  </pattern>
+                </defs>
+                <rect width="700" height="340" fill="url(#mapGrid)"/>
+
+                <!-- Stylized Coastline Polygon -->
+                <path d="M 0 0 L 580 0 L 640 70 L 520 145 L 440 245 L 360 340 L 0 340 Z" fill="rgba(226,232,240,0.55)" class="dark:fill-slate-900"/>
+
+                <!-- Highway Route Lines from NY Hub (440, 155) -->
+                <!-- NY -> BOS -->
+                <path d="M 440 155 Q 505 115 565 75" fill="none" stroke="#16a34a" stroke-width="3" stroke-dasharray="6 4"/>
+                <!-- NY -> CHI -->
+                <path d="M 440 155 Q 270 135 110 140" fill="none" stroke="#16a34a" stroke-width="3"/>
+                <!-- NY -> PHL -> BAL -> DC -->
+                <path d="M 440 155 L 395 200 L 350 250 L 315 285" fill="none" stroke="#16a34a" stroke-width="3"/>
+                <!-- NY -> TOR -->
+                <path d="M 440 155 Q 370 90 295 55" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5 5"/>
+
+                <!-- City Hub Nodes -->
+                <!-- NY Central Hub -->
+                <g transform="translate(440,155)">
+                  <circle r="12" fill="rgba(22,163,74,0.2)" class="dot-pulse"/>
+                  <circle r="6" fill="#15803d" stroke="#fff" stroke-width="2"/>
+                  <text x="12" y="4" class="text-[11px] font-bold fill-slate-800 dark:fill-white">NY Hub (HQ)</text>
+                </g>
+                <!-- BOS -->
+                <g transform="translate(565,75)">
+                  <circle r="5" fill="#16a34a" stroke="#fff" stroke-width="1.5"/>
+                  <text x="10" y="4" class="text-[10.5px] font-semibold fill-slate-700 dark:fill-slate-300">BOS (TRC-551)</text>
+                </g>
+                <!-- CHI -->
+                <g transform="translate(110,140)">
+                  <circle r="5" fill="#16a34a" stroke="#fff" stroke-width="1.5"/>
+                  <text x="-15" y="-10" class="text-[10.5px] font-semibold fill-slate-700 dark:fill-slate-300">CHI (TRC-118)</text>
+                </g>
+                <!-- PHL -->
+                <g transform="translate(395,200)">
+                  <circle r="5" fill="#16a34a" stroke="#fff" stroke-width="1.5"/>
+                  <text x="10" y="4" class="text-[10.5px] font-semibold fill-slate-700 dark:fill-slate-300">PHL (TRC-392)</text>
+                </g>
+                <!-- BAL -->
+                <g transform="translate(350,250)">
+                  <circle r="5" fill="#f59e0b" stroke="#fff" stroke-width="1.5"/>
+                  <text x="10" y="4" class="text-[10.5px] font-semibold fill-slate-700 dark:fill-slate-300">BAL (TRC-622)</text>
+                </g>
+                <!-- DC -->
+                <g transform="translate(315,285)">
+                  <circle r="5" fill="#16a34a" stroke="#fff" stroke-width="1.5"/>
+                  <text x="10" y="4" class="text-[10.5px] font-semibold fill-slate-700 dark:fill-slate-300">DC (TRC-405)</text>
+                </g>
+                <!-- TOR -->
+                <g transform="translate(295,55)">
+                  <circle r="5" fill="#f59e0b" stroke="#fff" stroke-width="1.5"/>
+                  <text x="10" y="4" class="text-[10.5px] font-semibold fill-slate-700 dark:fill-slate-300">TOR (TRC-914)</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Right Column: Active Route Advisories -->
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700 space-y-3">
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Active Corridor Advisories (3)</h3>
+            ${[
+              { code: 'I-95 North • Stamford CT', msg: 'Lane restriction near Exit 9. +12 min ETA adjustment applied to TRC-551.', type: 'Amber' },
+              { code: 'NJ Turnpike • Exit 14', msg: 'High volume freight queue at Newark interchange. Alternate I-78 recommended.', type: 'Amber' },
+              { code: 'I-80 West • Pennsylvania', msg: 'Clear weather corridor. Optimal fuel economy cruise active for TRC-118.', type: 'Green' }
+            ].map(adv => `
+              <div class="p-3.5 rounded-xl bg-[#f6f7f9] dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-white">
+                  <span>${adv.code}</span>
+                  <span class="w-2 h-2 rounded-full ${adv.type === 'Amber' ? 'bg-amber-500' : 'bg-emerald-500'}"></span>
+                </div>
+                <p class="text-[11.5px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">${adv.msg}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- VIEW 5: GENERIC RICH FLEET / SUPPORT / ANALYTICS VIEW GENERATOR ---
+    function renderSpecializedMenuView(menuKey) {
+      // All Vehicles & Active Trucks View
+      if (menuKey === 'all-vehicles' || menuKey === 'active-trucks') {
+        const list = menuKey === 'active-trucks'
+          ? state.trucks.filter(t => t.status === 'Loading' || t.status === 'Ready')
+          : state.trucks;
+
+        return `
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-sm font-semibold text-slate-800 dark:text-white">${menuKey === 'all-vehicles' ? 'Complete Commercial Fleet Inventory' : 'Currently Active & Loading Trucks'}</h2>
+                <p class="text-xs text-slate-400">Click any vehicle row to inspect dock load progress and axle telemetry</p>
+              </div>
+              <button onclick="openQuickShipmentModal()" class="px-3 py-1.5 rounded-lg bg-[#15803d] text-white text-xs font-semibold">+ Add Vehicle Dispatch</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+              ${list.map((t, i) => `
+                <div onclick="openTruckInspector('${t.id}')" style="animation-delay:${i*45}ms" class="stagger-card truck-card cursor-pointer bg-[#f6f7f9] dark:bg-slate-800/70 rounded-xl p-3 border border-slate-200/80 dark:border-slate-700">
+                  <div class="flex items-center justify-between">
+                    ${getStatusBadgeHTML(t.status)}
+                    <span class="text-xs font-semibold text-slate-400">${t.dock}</span>
+                  </div>
+                  <div class="my-2 flex justify-center">
+                    ${getTruckSVG(t.vehicleType)}
+                  </div>
+                  <div class="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200/70 dark:border-slate-700">
+                    <div class="flex justify-between text-xs font-bold text-slate-800 dark:text-white">
+                      <span>${t.id} (${t.route})</span>
+                      <span>${t.weightText}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-400 mt-0.5 mb-2">Driver: ${t.driver}</div>
+                    <div class="w-full h-1.5 rounded-full progress-hatched-track overflow-hidden">
+                      <div class="h-full bg-[#16a34a] rounded-full progress-fill-bar" data-target-width="${t.progress}%" style="width:0%"></div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Maintenance & Repairs View
+      if (menuKey === 'maintenance-repairs') {
+        const tickets = [
+          { unit: 'TRC-204', issue: 'Scheduled 50,000 km Brake Pad & Air Line Inspection', bay: 'Workshop Bay #2', cost: '$640', status: 'In Service', pct: 75 },
+          { unit: 'TRC-551', issue: 'Sleeper Cab HVAC Filter & Fifth-Wheel Lubrication', bay: 'Workshop Bay #1', cost: '$310', status: 'In Service', pct: 40 },
+          { unit: 'TRC-118', issue: 'Rear Liftgate Hydraulic Seal Check', bay: 'Completed Yesterday', cost: '$480', status: 'Resolved', pct: 100 },
+          { unit: 'TRC-622', issue: 'Tire Rotation & Alignment Calibration', bay: 'Scheduled Next Tue', cost: '$220', status: 'Scheduled', pct: 15 },
+          { unit: 'TRC-392', issue: 'Diesel Particulate Filter (DPF) Regeneration', bay: 'Completed', cost: '$390', status: 'Resolved', pct: 100 }
+        ];
+        return `
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-sm font-semibold text-slate-800 dark:text-white">Fleet Maintenance & Diagnostic Work Orders</h2>
+                <p class="text-xs text-slate-400">2 active workshop bays currently servicing fleet vehicles</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-md bg-slate-900 text-white text-xs font-semibold">2 Active Tickets</span>
+            </div>
+            <div class="space-y-3">
+              ${tickets.map((tk, i) => `
+                <div style="animation-delay:${i*50}ms" class="stagger-card p-4 rounded-xl bg-[#f6f7f9] dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-sm text-slate-900 dark:text-white">${tk.unit}</span>
+                      <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${tk.status === 'In Service' ? 'bg-amber-500/15 text-amber-700' : tk.status === 'Resolved' ? 'bg-emerald-500/15 text-emerald-700' : 'bg-slate-200 text-slate-700'}">${tk.status}</span>
+                      <span class="text-xs text-slate-400">• ${tk.bay}</span>
+                    </div>
+                    <div class="text-xs text-slate-600 dark:text-slate-300 mt-1">${tk.issue}</div>
+                  </div>
+                  <div class="w-full sm:w-56 shrink-0">
+                    <div class="flex justify-between text-[11px] text-slate-500 mb-1">
+                      <span>Est. Cost: <strong>${tk.cost}</strong></span>
+                      <span>${tk.pct}%</span>
+                    </div>
+                    <div class="w-full h-1.5 rounded-full progress-hatched-track overflow-hidden">
+                      <div class="h-full bg-[#16a34a] rounded-full progress-fill-bar" data-target-width="${tk.pct}%" style="width:0%"></div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Drivers Directory View
+      if (menuKey === 'drivers-directory') {
+        const drivers = [
+          { name: 'Marcus Lee', id: 'DRV-104', license: 'CDL Class A (Hazmat)', safety: '99.4%', truck: 'TRC-204 / TRC-405', shift: 'On Duty • Dock #3', hrs: '5.2 / 11 hrs' },
+          { name: 'Hannah Cruz', id: 'DRV-108', license: 'CDL Class A', safety: '98.9%', truck: 'TRC-118', shift: 'Standby • Dock #1', hrs: '1.0 / 11 hrs' },
+          { name: 'Alexi Park', id: 'DRV-112', license: 'CDL Class A (Doubles)', safety: '99.8%', truck: 'TRC-551', shift: 'Ready to Depart • Dock #7', hrs: '3.4 / 11 hrs' },
+          { name: 'David Kim', id: 'DRV-119', license: 'CDL Class A', safety: '99.1%', truck: 'TRC-392', shift: 'Pre-Trip Check • Dock #5', hrs: '2.1 / 11 hrs' },
+          { name: 'Elena Rostova', id: 'DRV-125', license: 'CDL Class A', safety: '97.8%', truck: 'TRC-710', shift: 'Staging • Dock #4', hrs: '0.5 / 11 hrs' },
+          { name: 'Devon Brooks', id: 'DRV-131', license: 'CDL Class B', safety: '98.5%', truck: 'TRC-809', shift: 'Loading • Dock #6', hrs: '4.0 / 11 hrs' }
+        ];
+        return `
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700">
+            <h2 class="text-sm font-semibold text-slate-800 dark:text-white mb-4">Certified Commercial Drivers Directory</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+              ${drivers.map((d, i) => `
+                <div style="animation-delay:${i*45}ms" class="stagger-card p-4 rounded-xl bg-[#f6f7f9] dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 space-y-2.5">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-9 h-9 rounded-full bg-emerald-600/15 text-[#15803d] dark:text-emerald-300 font-bold text-xs flex items-center justify-center">
+                        ${d.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <div class="text-xs font-bold text-slate-900 dark:text-white">${d.name}</div>
+                        <div class="text-[11px] text-slate-400">${d.license}</div>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-[#15803d] dark:text-emerald-300 text-[11px] font-semibold">${d.safety} Safety</span>
+                  </div>
+                  <div class="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-700 text-[11.5px] space-y-1">
+                    <div class="flex justify-between"><span class="text-slate-400">Assigned Unit:</span><strong class="text-slate-700 dark:text-slate-200">${d.truck}</strong></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Current Status:</span><span class="text-slate-600 dark:text-slate-300">${d.shift}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">HOS Logbook:</span><span class="text-slate-600 dark:text-slate-300">${d.hrs}</span></div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Settings View
+      if (menuKey === 'settings') {
+        return `
+          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700 max-w-3xl space-y-5">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-800 dark:text-white">Horizon Warehouse Control Preferences</h2>
+              <p class="text-xs text-slate-400">Configure automated dock gates, weight scale thresholds, and alert webhooks</p>
+            </div>
+            <div class="space-y-3">
+              ${[
+                { title: 'Automated Dock Door Interlock', desc: 'Prevent green dispatch status until rear cargo door sensor is locked', enabled: true },
+                { title: 'Overweight Axle Load Alerting', desc: 'Trigger immediate dispatcher notification when truck exceeds 10,000 kg capacity', enabled: true },
+                { title: 'Live GPS Telemetry Polling (5s)', desc: 'Continuously sync truck positions along NY, NJ, BOS, CHI corridors', enabled: true }
+              ].map(s => `
+                <div class="p-3.5 rounded-xl bg-[#f6f7f9] dark:bg-slate-900 border border-slate-200/70 dark:border-slate-700 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-semibold text-slate-800 dark:text-white">${s.title}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">${s.desc}</div>
+                  </div>
+                  <button onclick="showToast('Setting updated')" class="w-9 h-5 rounded-full bg-[#16a34a] p-0.5 flex items-center justify-end">
+                    <span class="w-4 h-4 rounded-full bg-white shadow"></span>
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Default rich view for remaining submenus (Fuel, Tire Sensors, Cold Chain, Active Shipments, History, Customs, Claims, Analytics, Customers, Team, Help)
+      return `
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-[#e6e8ec] dark:border-slate-700 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-800 dark:text-white">${menuTitles[menuKey] || 'Operations Module'}</h2>
+              <p class="text-xs text-slate-400">Real-time operational records synchronized with NY Central Warehouse Hub</p>
+            </div>
+            <button onclick="switchMenu('warehouse-operations')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium self-start">← Back to Warehouse Grid</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            ${state.trucks.slice(0, 6).map((t, idx) => `
+              <div onclick="openTruckInspector('${t.id}')" style="animation-delay:${idx*45}ms" class="stagger-card cursor-pointer p-4 rounded-xl bg-[#f6f7f9] dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 space-y-2.5 hover:border-slate-300 transition-all">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xs text-slate-900 dark:text-white">${t.id} • ${t.route}</span>
+                  ${getStatusBadgeHTML(t.status)}
+                </div>
+                <div class="text-[11.5px] text-slate-500 dark:text-slate-400">
+                  Operator: <strong class="text-slate-700 dark:text-slate-200">${t.driver}</strong> (${t.dock})
+                </div>
+                <div class="text-[11.5px] text-slate-500 dark:text-slate-400">
+                  Recorded Payload: <strong class="text-slate-700 dark:text-slate-200">${t.weightText}</strong>
+                </div>
+                <div class="w-full h-1.5 rounded-full progress-hatched-track overflow-hidden">
+                  <div class="h-full bg-[#16a34a] rounded-full progress-fill-bar" data-target-width="${t.progress}%" style="width:0%"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 5. NAVIGATION, ACCORDION & ANIMATION CONTROLLERS
+    // =========================================================================
+    function renderCurrentView() {
+      const container = document.getElementById('dynamicViewContainer');
+      const headerTitle = document.getElementById('topHeaderTitle');
+      headerTitle.textContent = menuTitles[state.activeMenu] || 'Warehouse operations';
+
+      // Trigger smooth view transition animation
+      container.classList.remove('view-animate-enter');
+      void container.offsetWidth; // Force reflow
+      container.classList.add('view-animate-enter');
+
+      if (state.activeMenu === 'warehouse-operations') {
+        container.innerHTML = renderWarehouseOperationsView();
+      } else if (state.activeMenu === 'dashboard') {
+        container.innerHTML = renderDashboardView();
+      } else if (state.activeMenu === 'unassigned-shipments') {
+        container.innerHTML = renderUnassignedShipmentsView();
+      } else if (state.activeMenu === 'route-planning') {
+        container.innerHTML = renderRoutePlanningView();
+      } else {
+        container.innerHTML = renderSpecializedMenuView(state.activeMenu);
+      }
+
+      // Animate progress bars smoothly from 0% to target width
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          document.querySelectorAll('.progress-fill-bar').forEach(bar => {
+            const target = bar.getAttribute('data-target-width');
+            if (target) bar.style.width = target;
+          });
+        }, 40);
+      });
+    }
+
+    function switchMenu(menuKey) {
+      state.activeMenu = menuKey;
+
+      // Update active button styling in sidebar
+      document.querySelectorAll('.menu-btn').forEach(btn => {
+        const key = btn.getAttribute('data-menu');
+        const icon = btn.querySelector('.menu-icon');
+        if (key === menuKey) {
+          btn.className = 'menu-btn active-menu w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] border border-slate-200/80 dark:border-slate-700 transition-all group';
+          if (icon) {
+            icon.classList.remove('text-slate-400');
+            icon.classList.add('text-[#15803d]', 'dark:text-emerald-400');
+          }
+        } else {
+          const isSubmenu = btn.closest('.submenu-inner') !== null;
+          if (isSubmenu) {
+            btn.className = 'menu-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition-all';
+          } else {
+            btn.className = 'menu-btn w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-[12.5px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all group';
+          }
+          if (icon) {
+            icon.classList.remove('text-[#15803d]', 'dark:text-emerald-400');
+            icon.classList.add('text-slate-400');
+          }
+        }
+      });
+
+      // Scroll main viewport back to top smoothly on menu change while keeping outer frame fixed
+      const viewport = document.getElementById('mainScrollViewport');
+      if (viewport) viewport.scrollTo({ top: 0, behavior: 'smooth' });
+
+      renderCurrentView();
+    }
+
+    function toggleAccordion(submenuId, chevronId) {
+      const submenu = document.getElementById(submenuId);
+      const chevron = document.getElementById(chevronId);
+      if (!submenu) return;
+      const isOpen = submenu.classList.contains('open');
+      if (isOpen) {
+        submenu.classList.remove('open');
+        if (chevron) chevron.classList.remove('rotate-180');
+      } else {
+        submenu.classList.add('open');
+        if (chevron) chevron.classList.add('rotate-180');
+      }
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('sidebar');
+      state.sidebarCollapsed = !state.sidebarCollapsed;
+      const texts = document.querySelectorAll('.sidebar-text');
+      const searchWrap = document.querySelector('.sidebar-search-wrap');
+
+      if (state.sidebarCollapsed) {
+        sidebar.style.width = '68px';
+        texts.forEach(el => el.classList.add('hidden'));
+        if (searchWrap) searchWrap.classList.add('hidden');
+      } else {
+        sidebar.style.width = '248px';
+        texts.forEach(el => el.classList.remove('hidden'));
+        if (searchWrap) searchWrap.classList.remove('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 6. INTERACTIVE FILTERS, LIVE REFRESH & TRUCK INSPECTOR
+    // =========================================================================
+    function handleTruckSearch(val) {
+      state.searchQuery = val;
+      renderCurrentView();
+    }
+
+    function handleSidebarSearch(val) {
+      const q = val.trim().toLowerCase();
+      // Open accordions when searching sidebar so user sees matching submenus
+      if (q.length > 0) {
+        document.getElementById('fleetSubmenu').classList.add('open');
+        document.getElementById('shipmentsSubmenu').classList.add('open');
+      }
+      document.querySelectorAll('#sidebarNav .menu-btn').forEach(btn => {
+        const txt = btn.textContent.toLowerCase();
+        btn.style.display = (!q || txt.includes(q)) ? 'flex' : 'none';
+      });
+    }
+
+    function toggleHeaderFilterMenu() {
+      const dd = document.getElementById('headerFilterDropdown');
+      dd.classList.toggle('hidden');
+    }
+
+    function applyStatusFilter(status) {
+      state.statusFilter = status;
+      document.getElementById('headerFilterDropdown').classList.add('hidden');
+      document.getElementById('headerFilterLabel').textContent = status === 'ALL' ? 'Filter' : status;
+      if (state.activeMenu !== 'warehouse-operations') {
+        switchMenu('warehouse-operations');
+      } else {
+        renderCurrentView();
+      }
+    }
+
+    function cycleStatusFilter() {
+      const order = ['ALL', 'Loading', 'Ready', 'Completed', 'Not started'];
+      const nextIdx = (order.indexOf(state.statusFilter) + 1) % order.length;
+      applyStatusFilter(order[nextIdx]);
+    }
+
+    function resetTruckFilters() {
+      state.statusFilter = 'ALL';
+      state.searchQuery = '';
+      renderCurrentView();
+    }
+
+    function toggleLayoutMode() {
+      state.layoutMode = state.layoutMode === 'grid' ? 'list' : 'grid';
+      renderCurrentView();
+    }
+
+    function triggerLiveRefresh() {
+      const icon = document.getElementById('refreshIcon');
+      icon.classList.remove('spin-anim');
+      void icon.offsetWidth;
+      icon.classList.add('spin-anim');
+
+      // Increment loading trucks progress slightly to show live animation
+      state.trucks.forEach(t => {
+        if (t.status === 'Loading' && t.progress < 100) {
+          t.progress = Math.min(100, t.progress + Math.floor(Math.random() * 6) + 2);
+          const kg = Math.round((t.progress / 100) * 10000);
+          t.weightText = kg.toLocaleString() + ' kg';
+          t.weightPctText = `(${t.progress}%)`;
+          if (t.progress === 100) {
+            t.status = 'Ready';
+            state.kpis.dispatchReady += 1;
+          }
+        }
+      });
+
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      state.lastUpdated = `Today, ${hh}:${mm} PM`;
+
+      renderCurrentView();
+      showToast('Warehouse telemetry & dock load sensors refreshed');
+    }
+
+    // Truck Inspector Modal
+    function openTruckInspector(truckId) {
+      const truck = state.trucks.find(t => t.id === truckId);
+      if (!truck) return;
+      const modal = document.getElementById('truckInspectorModal');
+      const content = document.getElementById('truckInspectorContent');
+
+      content.innerHTML = `
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+          <div class="flex items-center gap-2.5">
+            <span class="text-base font-bold text-slate-900 dark:text-white">${truck.id}</span>
+            ${getStatusBadgeHTML(truck.status)}
+          </div>
+          <button onclick="closeTruckInspector()" class="text-slate-400 hover:text-slate-600 p-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="my-4 py-3 px-4 rounded-xl bg-[#f6f7f9] dark:bg-slate-900 flex items-center justify-between border border-slate-200/70 dark:border-slate-700">
+          <div>
+            <div class="text-xs text-slate-400">Corridor Route</div>
+            <div class="text-sm font-bold text-slate-900 dark:text-white mt-0.5">${truck.route}</div>
+            <div class="text-xs text-slate-500 mt-1">${truck.driver} • ${truck.dock}</div>
+            <div class="text-xs font-semibold text-[#15803d] dark:text-emerald-400 mt-1">${truck.weightText} ${truck.weightPctText}</div>
+          </div>
+          <div class="shrink-0">
+            ${getTruckSVG(truck.vehicleType)}
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <div class="flex justify-between font-medium text-slate-700 dark:text-slate-200 mb-1">
+              <span>Adjust Live Dock Load Progress</span>
+              <span id="inspectorPctLabel" class="font-bold text-[#15803d] dark:text-emerald-400">${truck.progress}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value="${truck.progress}"
+              oninput="updateTruckProgressLive('${truck.id}', this.value)"
+              class="w-full accent-[#15803d] cursor-pointer"
+            />
+          </div>
+
+          <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
+            <div class="flex gap-1.5">
+              <button onclick="setTruckStatus('${truck.id}', 'Loading')" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium">Set Loading</button>
+              <button onclick="setTruckStatus('${truck.id}', 'Ready')" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium">Mark Ready</button>
+            </div>
+            <button onclick="closeTruckInspector()" class="px-4 py-1.5 rounded-lg bg-[#15803d] text-white font-semibold">Done</button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function updateTruckProgressLive(truckId, newPct) {
+      const truck = state.trucks.find(t => t.id === truckId);
+      if (!truck) return;
+      const pct = parseInt(newPct, 10);
+      truck.progress = pct;
+      const kg = Math.round((pct / 100) * 10000);
+      truck.weightText = kg.toLocaleString() + ' kg';
+      truck.weightPctText = `(${pct}%)`;
+      if (pct === 0) truck.status = 'Not started';
+      else if (pct === 100) truck.status = 'Ready';
+      else truck.status = 'Loading';
+
+      const lbl = document.getElementById('inspectorPctLabel');
+      if (lbl) lbl.textContent = pct + '%';
+      renderCurrentView();
+    }
+
+    function setTruckStatus(truckId, status) {
+      const truck = state.trucks.find(t => t.id === truckId);
+      if (!truck) return;
+      truck.status = status;
+      if (status === 'Ready') truck.progress = 100;
+      closeTruckInspector();
+      renderCurrentView();
+      showToast(`${truckId} status updated to ${status}`);
+    }
+
+    function closeTruckInspector() {
+      const modal = document.getElementById('truckInspectorModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Quick Shipment Modal
+    function openQuickShipmentModal() {
+      const modal = document.getElementById('quickShipmentModal');
+      const randomNum = Math.floor(100 + Math.random() * 890);
+      document.getElementById('qsTruckId').value = `TRC-${randomNum}`;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeQuickShipmentModal() {
+      const modal = document.getElementById('quickShipmentModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function submitQuickShipment(e) {
+      e.preventDefault();
+      const id = document.getElementById('qsTruckId').value.trim() || 'TRC-990';
+      const vehicleType = document.getElementById('qsVehicleType').value;
+      const route = document.getElementById('qsRoute').value.trim() || 'NY → BOS';
+      const driverDock = document.getElementById('qsDriverDock').value.split('•');
+      const driver = (driverDock[0] || 'Marcus Lee').trim();
+      const dock = (driverDock[1] || 'Dock #10').trim();
+      const weight = parseInt(document.getElementById('qsWeight').value, 10) || 4500;
+      const progress = Math.min(100, Math.max(0, parseInt(document.getElementById('qsProgress').value, 10) || 45));
+
+      const status = progress === 0 ? 'Not started' : progress === 100 ? 'Ready' : 'Loading';
+
+      state.trucks.unshift({
+        id,
+        status,
+        weightText: `${weight.toLocaleString()} kg`,
+        weightPctText: `(${progress}%)`,
+        route,
+        driver,
+        dock,
+        progress,
+        vehicleType
+      });
+
+      state.kpis.trucksInside += 1;
+      closeQuickShipmentModal();
+      switchMenu('warehouse-operations');
+      showToast(`${id} dispatched to ${dock}`);
+    }
+
+    function assignPendingShipment(shpId) {
+      state.unassignedQueue = state.unassignedQueue.filter(s => s.id !== shpId);
+      state.kpis.unassignedShipments = Math.max(0, state.kpis.unassignedShipments - 1);
+      const badge = document.getElementById('unassignedSubBadge');
+      if (badge) badge.textContent = state.kpis.unassignedShipments;
+      renderCurrentView();
+      showToast(`Manifest ${shpId} assigned to active loading bay`);
+    }
+
+    // Upgrade Modal
+    function openUpgradeModal() {
+      const m = document.getElementById('upgradeModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+    function closeUpgradeModal() {
+      const m = document.getElementById('upgradeModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+    function activatePremiumPlan() {
+      closeUpgradeModal();
+      showToast('Horizon Enterprise Trial activated for all 10 docks!');
+    }
+
+    // Dark Mode Toggle
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      const knob = document.getElementById('darkModeKnob');
+      const isDark = html.classList.toggle('dark');
+      if (isDark) {
+        knob.classList.add('translate-x-3.5');
+      } else {
+        knob.classList.remove('translate-x-3.5');
+      }
+    }
+
+    // Toast Helper
+    let toastTimer = null;
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      const txt = document.getElementById('toastText');
+      txt.textContent = msg;
+      box.classList.remove('opacity-0', 'translate-y-3');
+      box.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        box.classList.add('opacity-0', 'translate-y-3');
+        box.classList.remove('opacity-100', 'translate-y-0');
+      }, 2800);
+    }
+
+    // Keyboard shortcut Cmd+F / Ctrl+F focuses sidebar search
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        const input = document.getElementById('sidebarSearchInput');
+        if (input) input.focus();
+      }
+      if (e.key === 'Escape') {
+        closeQuickShipmentModal();
+        closeTruckInspector();
+        closeUpgradeModal();
+        document.getElementById('headerFilterDropdown').classList.add('hidden');
+      }
+    });
+
+    // Close filter dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const dd = document.getElementById('headerFilterDropdown');
+      if (dd && !dd.parentElement.contains(e.target)) {
+        dd.classList.add('hidden');
+      }
+    });
+
+    // Initialize App on Load
+    window.onload = function () {
+      renderCurrentView();
+    };
+  </script>
+</body>
+</html>
