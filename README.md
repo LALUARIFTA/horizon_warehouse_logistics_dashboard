@@ -1,6 +1,6 @@
 # Horizon — Warehouse & Logistics Dashboard Template
 
-Free, open-source warehouse operations & logistics dashboard. Pure **HTML + Tailwind CSS (CDN) + vanilla JavaScript** — no build step, no framework, no backend required. Fork it, deploy it to GitHub Pages, and customize it for your own fleet/warehouse products.
+![Horizon Warehouse Logistics Dashboard preview](assets/img/preview.png)
 
 ## ✨ Features
 
